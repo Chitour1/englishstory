@@ -216,6 +216,7 @@
             allDOMElements.navBasket.addEventListener('click', () => showTab('basket'));
 
             document.body.addEventListener('mouseup', handleTextSelection);
+            document.body.addEventListener('touchend', handleTextSelection); // FIX for mobile selection
             document.body.addEventListener('mousedown', (e) => {
                 if (!allDOMElements.selectionPopup.contains(e.target)) {
                     allDOMElements.selectionPopup.classList.add('hidden');
@@ -940,3 +941,4 @@
     </script>
 </body>
 </html>
+" in the Canvas.
