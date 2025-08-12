@@ -216,7 +216,7 @@
             allDOMElements.navBasket.addEventListener('click', () => showTab('basket'));
 
             document.body.addEventListener('mouseup', handleTextSelection);
-            document.body.addEventListener('touchend', handleTextSelection); // FIX for mobile selection
+            document.body.addEventListener('touchend', handleTextSelection); 
             document.body.addEventListener('mousedown', (e) => {
                 if (!allDOMElements.selectionPopup.contains(e.target)) {
                     allDOMElements.selectionPopup.classList.add('hidden');
@@ -642,30 +642,38 @@
         }
 
         function handleTextSelection(event) {
-            const selection = window.getSelection();
-            let selectedText = selection.toString().trim();
-            
-            if (!selectedText) {
-                allDOMElements.selectionPopup.classList.add('hidden');
-                return;
-            }
-            
-            if (selectedText.length > 0 && allDOMElements.lessonScreen.contains(selection.anchorNode)) {
-                const range = selection.getRangeAt(0);
-                const rect = range.getBoundingClientRect();
+            // Use a small timeout to let the selection register properly on mobile
+            setTimeout(() => {
+                const selection = window.getSelection();
+                let selectedText = selection.toString().trim();
+
+                if (!selectedText) {
+                    allDOMElements.selectionPopup.classList.add('hidden');
+                    return;
+                }
                 
-                allDOMElements.selectionPopup.style.left = `${rect.left + window.scrollX + (rect.width / 2) - (allDOMElements.selectionPopup.offsetWidth / 2)}px`;
-                allDOMElements.selectionPopup.style.top = `${rect.top + window.scrollY - allDOMElements.selectionPopup.offsetHeight - 10}px`;
-                allDOMElements.selectionPopup.classList.remove('hidden');
+                if (selectedText.length > 0 && allDOMElements.lessonScreen.contains(selection.anchorNode)) {
+                    // Prevent the default context menu on touch devices
+                    if (event.type === 'touchend') {
+                        event.preventDefault();
+                    }
 
-                const storyContainer = document.getElementById('story-container');
-                const mood = storyContainer ? storyContainer.dataset.mood : 'neutral';
+                    const range = selection.getRangeAt(0);
+                    const rect = range.getBoundingClientRect();
+                    
+                    allDOMElements.selectionPopup.style.left = `${rect.left + window.scrollX + (rect.width / 2) - (allDOMElements.selectionPopup.offsetWidth / 2)}px`;
+                    allDOMElements.selectionPopup.style.top = `${rect.top + window.scrollY - allDOMElements.selectionPopup.offsetHeight - 10}px`;
+                    allDOMElements.selectionPopup.classList.remove('hidden');
 
-                document.getElementById('popup-translate').onclick = () => { getTranslation(selectedText); allDOMElements.selectionPopup.classList.add('hidden'); };
-                document.getElementById('popup-speak').onclick = () => { speakText(selectedText, mood); allDOMElements.selectionPopup.classList.add('hidden'); };
-                document.getElementById('popup-phonetics').onclick = () => { getPhonetics(selectedText); allDOMElements.selectionPopup.classList.add('hidden'); };
-                document.getElementById('popup-save').onclick = () => { saveToBasket(selectedText); allDOMElements.selectionPopup.classList.add('hidden'); };
-            }
+                    const storyContainer = document.getElementById('story-container');
+                    const mood = storyContainer ? storyContainer.dataset.mood : 'neutral';
+
+                    document.getElementById('popup-translate').onclick = () => { getTranslation(selectedText); allDOMElements.selectionPopup.classList.add('hidden'); };
+                    document.getElementById('popup-speak').onclick = () => { speakText(selectedText, mood); allDOMElements.selectionPopup.classList.add('hidden'); };
+                    document.getElementById('popup-phonetics').onclick = () => { getPhonetics(selectedText); allDOMElements.selectionPopup.classList.add('hidden'); };
+                    document.getElementById('popup-save').onclick = () => { saveToBasket(selectedText); allDOMElements.selectionPopup.classList.add('hidden'); };
+                }
+            }, 10);
         }
         
         async function getTranslation(text) {
@@ -941,4 +949,3 @@
     </script>
 </body>
 </html>
-" in the Canvas.
