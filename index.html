@@ -400,15 +400,15 @@
 
             ${rewrite ? 'أعد كتابة القصة والتمارين فقط بنفس الكلمات والقواعد السابقة، مع تغيير الأسلوب (قصة، حوار، سرد).' : 'قم بإنشاء درس جديد بالكامل.'}
 
-            **JSON Structure Example (provide all fields):**
+            **JSON Structure:**
             {
-              "story_type": "story",
-              "story_mood": "happy",
-              "story": "A <b>boy</b> has a <i>dog</i>. The dog is <b>big</b>.",
-              "new_words": [{"word": "boy", "translation": "ولد"}, {"word": "big", "translation": "كبير"}],
-              "grammar_focus": { "title": "Using 'a' and 'an'", "explanation": "We use 'a' before consonants and 'an' before vowels.", "examples": [{"example": "a boy", "translation": "ولد"}, {"example": "an apple", "translation": "تفاحة"}] },
-              "useful_structures": [{"structure": "to have", "explanation": "To show possession."}],
-              "pronunciation_tips": { "title": "Pronunciation", "tips": [{"context": "boy", "tip": "Sounds like 'boi'"}] },
+              "story_type": "story, dialogue, or narrative",
+              "story_mood": "happy, calm, exciting, or neutral",
+              "story": "The text with <b>new words</b> and <i>repetition words</i>.",
+              "new_words": [{"word": "word", "translation": "ترجمة"}],
+              "grammar_focus": { "title": "Title", "explanation": "Explanation", "examples": [{"example": "Sentence", "translation": "ترجمة"}] },
+              "useful_structures": [{"structure": "Structure", "explanation": "Explanation"}],
+              "pronunciation_tips": { "title": "Title", "tips": [{"context": "Word/Letter", "tip": "Tip"}] },
               "exercises": [
                 { "type": "fill_in_the_blank", "question": "The ___ is big.", "answer": "dog" },
                 { "type": "multiple_choice", "question": "What does the boy have?", "options": ["a cat", "a dog", "a car"], "answer": "a dog" },
