@@ -15,9 +15,13 @@
         .font-english {
             font-family: 'Inter', sans-serif;
         }
-        .lesson-content b {
+        .lesson-content b { /* New Words */
             background-color: #fef08a; padding: 2px 4px; border-radius: 4px;
             font-weight: 700; color: #713f12; cursor: pointer;
+        }
+        .lesson-content i { /* Repetition Words */
+            background-color: #dbeafe; padding: 2px 4px; border-radius: 4px;
+            font-weight: 700; color: #1e3a8a; cursor: pointer; font-style: normal;
         }
         .lesson-content .word-span { cursor: pointer; }
         .lesson-content .word-span:hover { background-color: #e0f2fe; }
@@ -108,8 +112,8 @@
             <div class="mb-6 flex justify-center border-b flex-wrap">
                 <button id="nav-home" class="px-4 py-3 text-lg font-bold border-b-4 border-sky-600 text-sky-600">الرئيسية</button>
                 <button id="nav-history" class="px-4 py-3 text-lg font-bold border-b-4 border-transparent text-slate-500 hover:text-sky-600">سجل الدروس</button>
-                <button id="nav-learned" class="px-4 py-3 text-lg font-bold border-b-4 border-transparent text-slate-500 hover:text-sky-600">الكلمات المتعلمة</button>
-                <button id="nav-basket" class="px-4 py-3 text-lg font-bold border-b-4 border-transparent text-slate-500 hover:text-sky-600">سلة التعلم</button>
+                <button id="nav-in-progress" class="px-4 py-3 text-lg font-bold border-b-4 border-transparent text-slate-500 hover:text-sky-600">كلمات قيد التعلم</button>
+                <button id="nav-basket" class="px-4 py-3 text-lg font-bold border-b-4 border-transparent text-slate-500 hover:text-sky-600">سلة المراجعة</button>
             </div>
             
             <div id="stats-section" class="mb-6 p-4 bg-white rounded-lg shadow-md flex flex-wrap justify-around text-center">
@@ -120,7 +124,19 @@
 
             <div id="home-screen" class="text-center p-8 bg-white rounded-lg shadow-md">
                 <h2 class="text-2xl font-bold mb-4">هل أنت مستعد لدرس جديد؟</h2>
-                <p class="text-slate-600 mb-6">اضغط على الزر أدناه ليقوم الذكاء الاصطناعي بإنشاء قصة جديدة لك من 15-20 كلمة لم تتعلمها بعد.</p>
+                <p class="text-slate-600 mb-6">حدد عدد الكلمات وأضف تعليمات خاصة للقصة إذا أردت.</p>
+                
+                <div class="max-w-md mx-auto space-y-4 mb-6 text-right">
+                    <div>
+                        <label for="word-count-home" class="block text-sm font-medium text-slate-700">إجمالي كلمات القصة (تقريبيًا 50-500)</label>
+                        <input type="number" id="word-count-home" value="100" min="50" max="500" class="mt-1 block w-full p-2 border border-slate-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500">
+                    </div>
+                    <div>
+                        <label for="custom-prompt-home" class="block text-sm font-medium text-slate-700">اكتب تعليمات للقصة (اختياري)</label>
+                        <textarea id="custom-prompt-home" rows="2" class="mt-1 block w-full p-2 border border-slate-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500" placeholder="مثال: قصة عن حيوانات في حديقة، للأطفال..."></textarea>
+                    </div>
+                </div>
+
                 <button id="new-lesson-btn" class="bg-green-600 text-white px-8 py-3 rounded-lg text-lg font-bold hover:bg-green-700 transition transform hover:scale-105">
                     <span class="flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
@@ -135,7 +151,7 @@
                 <div id="history-list" class="space-y-2"></div>
             </div>
 
-            <div id="learned-words-screen" class="hidden p-4 bg-white rounded-lg shadow-md"></div>
+            <div id="in-progress-screen" class="hidden p-4 bg-white rounded-lg shadow-md"></div>
             
             <div id="basket-screen" class="hidden space-y-6"></div>
 
@@ -158,6 +174,7 @@
     <script>
         const a1Words = ['a', 'an', 'about', 'above', 'across', 'action', 'activity', 'actor', 'actress', 'add', 'address', 'adult', 'advice', 'afraid', 'after', 'afternoon', 'again', 'age', 'ago', 'agree', 'air', 'airport', 'all', 'also', 'always', 'amazing', 'and', 'angry', 'animal', 'another', 'answer', 'any', 'anyone', 'anything', 'apartment', 'apple', 'April', 'area', 'arm', 'around', 'arrive', 'art', 'article', 'artist', 'as', 'ask', 'at', 'August', 'aunt', 'autumn', 'away', 'baby', 'back', 'bad', 'bag', 'ball', 'banana', 'band', 'bank', 'bath', 'bathroom', 'be', 'beach', 'beautiful', 'because', 'become', 'bed', 'bedroom', 'beer', 'before', 'begin', 'beginning', 'behind', 'believe', 'below', 'best', 'better', 'between', 'bicycle', 'big', 'bike', 'bill', 'bird', 'birthday', 'black', 'blog', 'blonde', 'blue', 'boat', 'body', 'book', 'boot', 'bored', 'boring', 'born', 'both', 'bottle', 'box', 'boy', 'boyfriend', 'bread', 'break', 'breakfast', 'bring', 'brother', 'brown', 'build', 'building', 'bus', 'business', 'busy', 'but', 'butter', 'buy', 'by', 'bye', 'cafe', 'cake', 'call', 'camera', 'can', 'cannot', 'capital', 'car', 'card', 'career', 'carrot', 'carry', 'cat', 'CD', 'cent', 'centre', 'century', 'chair', 'change', 'chart', 'cheap', 'check', 'cheese', 'chicken', 'child', 'chocolate', 'choose', 'cinema', 'city', 'class', 'classroom', 'clean', 'climb', 'clock', 'close', 'clothes', 'club', 'coat', 'coffee', 'cold', 'college', 'colour', 'come', 'common', 'company', 'compare', 'complete', 'computer', 'concert', 'conversation', 'cook', 'cooking', 'cool', 'correct', 'cost', 'could', 'country', 'course', 'cousin', 'cow', 'cream', 'create', 'culture', 'cup', 'customer', 'cut', 'dad', 'dance', 'dancer', 'dancing', 'dangerous', 'dark', 'date', 'daughter', 'day', 'dear', 'December', 'decide', 'delicious', 'describe', 'description', 'design', 'desk', 'detail', 'dialogue', 'dictionary', 'die', 'diet', 'difference', 'different', 'difficult', 'dinner', 'dirty', 'discuss', 'dish', 'do', 'doctor', 'dog', 'dollar', 'door', 'down', 'downstairs', 'draw', 'dress', 'drink', 'drive', 'driver', 'during', 'DVD', 'each', 'ear', 'early', 'east', 'easy', 'eat', 'egg', 'eight', 'eighteen', 'eighty', 'elephant', 'eleven', 'else', 'email', 'end', 'enjoy', 'enough', 'euro', 'even', 'evening', 'event', 'ever', 'every', 'everybody', 'everyone', 'everything', 'exam', 'example', 'excited', 'exciting', 'exercise', 'expensive', 'explain', 'extra', 'eye', 'face', 'fact', 'fall', 'false', 'family', 'famous', 'fantastic', 'far', 'farm', 'farmer', 'fast', 'fat', 'father', 'favourite', 'February', 'feel', 'feeling', 'festival', 'few', 'fifteen', 'fifth', 'fifty', 'fill', 'film', 'final', 'find', 'fine', 'finish', 'fire', 'first', 'fish', 'five', 'flat', 'flight', 'floor', 'flower', 'fly', 'follow', 'food', 'foot', 'football', 'for', 'forget', 'form', 'forty', 'four', 'fourteen', 'fourth', 'free', 'Friday', 'friend', 'friendly', 'from', 'front', 'fruit', 'full', 'fun', 'funny', 'future', 'game', 'garden', 'geography', 'get', 'girl', 'girlfriend', 'give', 'glass', 'go', 'good', 'goodbye', 'grandfather', 'grandmother', 'grandparent', 'great', 'green', 'grey', 'group', 'grow', 'guess', 'guitar', 'gym', 'hair', 'half', 'hand', 'happen', 'happy', 'hard', 'hat', 'hate', 'have', 'have to', 'he', 'head', 'health', 'healthy', 'hear', 'hello', 'help', 'her', 'here', 'hey', 'hi', 'high', 'him', 'his', 'history', 'hobby', 'holiday', 'home', 'homework', 'hope', 'horse', 'hospital', 'hot', 'hotel', 'hour', 'house', 'how', 'however', 'hundred', 'hungry', 'husband', 'I', 'ice', 'ice cream', 'idea', 'if', 'imagine', 'important', 'improve', 'in', 'include', 'information', 'interest', 'interested', 'interesting', 'internet', 'interview', 'into', 'introduce', 'island', 'it', 'its', 'January', 'jeans', 'job', 'join', 'journey', 'juice', 'July', 'June', 'just', 'keep', 'key', 'kilometre', 'kind', 'kitchen', 'know', 'land', 'language', 'large', 'last', 'late', 'later', 'laugh', 'learn', 'leave', 'left', 'leg', 'lesson', 'let', 'letter', 'library', 'lie', 'life', 'light', 'like', 'line', 'lion', 'list', 'listen', 'little', 'live', 'local', 'long', 'look', 'lose', 'lot', 'love', 'lunch', 'machine', 'magazine', 'main', 'make', 'man', 'many', 'map', 'March', 'market', 'married', 'match', 'May', 'maybe', 'me', 'meal', 'mean', 'meaning', 'meat', 'meet', 'meeting', 'member', 'menu', 'message', 'metre', 'midnight', 'mile', 'milk', 'million', 'minute', 'miss', 'mistake', 'model', 'modern', 'moment', 'Monday', 'money', 'month', 'more', 'morning', 'most', 'mother', 'mountain', 'mouse', 'mouth', 'move', 'movie', 'much', 'mum', 'museum', 'music', 'must', 'my', 'name', 'natural', 'near', 'need', 'negative', 'neighbour', 'never', 'new', 'news', 'newspaper', 'next', 'next to', 'nice', 'night', 'nine', 'nineteen', 'ninety', 'no', 'no one', 'nobody', 'north', 'nose', 'not', 'note', 'nothing', 'November', 'now', 'number', 'nurse', 'object', "o'clock", 'October', 'of', 'off', 'office', 'often', 'oh', 'OK', 'old', 'on', 'once', 'one', 'onion', 'online', 'only', 'open', 'opinion', 'opposite', 'or', 'orange', 'order', 'other', 'our', 'out', 'outside', 'over', 'own', 'page', 'paint', 'painting', 'pair', 'paper', 'paragraph', 'parent', 'park', 'part', 'partner', 'party', 'passport', 'past', 'pay', 'pen', 'pencil', 'people', 'pepper', 'perfect', 'period', 'person', 'personal', 'phone', 'photo', 'photograph', 'phrase', 'piano', 'picture', 'piece', 'pig', 'pink', 'place', 'plan', 'plane', 'plant', 'play', 'player', 'please', 'point', 'police', 'policeman', 'pool', 'poor', 'popular', 'positive', 'possible', 'post', 'potato', 'pound', 'practice', 'practise', 'prefer', 'prepare', 'present', 'pretty', 'price', 'probably', 'problem', 'product', 'programme', 'project', 'purple', 'put', 'quarter', 'question', 'quick', 'quickly', 'quiet', 'quite', 'radio', 'rain', 'read', 'reader', 'reading', 'ready', 'real', 'really', 'reason', 'red', 'relax', 'remember', 'repeat', 'report', 'restaurant', 'result', 'return', 'rice', 'rich', 'ride', 'right', 'river', 'road', 'room', 'routine', 'rule', 'run', 'sad', 'salad', 'salt', 'same', 'sandwich', 'Saturday', 'say', 'school', 'science', 'scientist', 'sea', 'second', 'section', 'see', 'sell', 'send', 'sentence', 'September', 'seven', 'seventeen', 'seventy', 'share', 'she', 'sheep', 'shirt', 'shoe', 'shop', 'shopping', 'short', 'should', 'show', 'shower', 'sick', 'similar', 'sing', 'singer', 'sister', 'sit', 'situation', 'six', 'sixteen', 'sixty', 'skill', 'skirt', 'sleep', 'slow', 'small', 'snake', 'snow', 'so', 'some', 'somebody', 'someone', 'something', 'sometimes', 'son', 'song', 'soon', 'sorry', 'sound', 'soup', 'south', 'space', 'speak', 'special', 'spell', 'spelling', 'spend', 'sport', 'spring', 'stand', 'star', 'start', 'statement', 'station', 'stay', 'still', 'stop', 'story', 'street', 'strong', 'student', 'study', 'style', 'subject', 'success', 'sugar', 'summer', 'sun', 'Sunday', 'supermarket', 'sure', 'sweater', 'swim', 'swimming', 'table', 'take', 'talk', 'tall', 'taxi', 'tea', 'teach', 'teacher', 'team', 'teenager', 'telephone', 'television', 'tell', 'ten', 'tennis', 'terrible', 'test', 'text', 'than', 'thank', 'thanks', 'that', 'the', 'theatre', 'their', 'them', 'then', 'there', 'they', 'thing', 'think', 'third', 'thirsty', 'thirteen', 'thirty', 'this', 'thousand', 'three', 'through', 'Thursday', 'ticket', 'time', 'tired', 'title', 'to', 'today', 'together', 'toilet', 'tomato', 'tomorrow', 'tonight', 'too', 'tooth', 'topic', 'tourist', 'town', 'traffic', 'train', 'travel', 'tree', 'trip', 'trousers', 'true', 'try', 'T-shirt', 'Tuesday', 'turn', 'TV', 'twelve', 'twenty', 'twice', 'two', 'type', 'umbrella', 'uncle', 'under', 'understand', 'university', 'until', 'up', 'upstairs', 'us', 'use', 'useful', 'usually', 'vacation', 'vegetable', 'very', 'video', 'village', 'visit', 'visitor', 'wait', 'waiter', 'wake', 'walk', 'wall', 'want', 'warm', 'wash', 'watch', 'water', 'way', 'we', 'wear', 'weather', 'website', 'Wednesday', 'week', 'weekend', 'welcome', 'well', 'west', 'what', 'when', 'where', 'which', 'white', 'who', 'why', 'wife', 'will', 'win', 'window', 'wine', 'winter', 'with', 'without', 'woman', 'wonderful', 'word', 'work', 'worker', 'world', 'worry', 'would', 'write', 'writer', 'writing', 'wrong', 'year', 'yellow', 'yes', 'yesterday', 'you', 'young', 'your', 'yourself'];
         const ttsVoices = ['Zephyr', 'Puck', 'Charon', 'Kore', 'Fenrir', 'Leda', 'Orus', 'Aoede', 'Callirrhoe', 'Autonoe', 'Enceladus', 'Iapetus', 'Umbriel', 'Algieba', 'Despina', 'Erinome', 'Algenib', 'Rasalgethi', 'Laomedeia', 'Achernar', 'Alnilam', 'Schedar', 'Gacrux', 'Pulcherrima', 'Achird', 'Zubenelgenubi', 'Vindemiatrix', 'Sadachbia', 'Sadaltager', 'Sulafat'];
+        const repetitionIntervals = { 1: 5, 2: 15, 3: 20 };
 
         const allDOMElements = {
             apiKeySection: document.getElementById('api-key-section'),
@@ -166,11 +183,11 @@
             mainContent: document.getElementById('main-content'),
             navHome: document.getElementById('nav-home'),
             navHistory: document.getElementById('nav-history'),
-            navLearned: document.getElementById('nav-learned'),
+            navLearned: document.getElementById('nav-in-progress'),
             navBasket: document.getElementById('nav-basket'),
             homeScreen: document.getElementById('home-screen'),
             historyScreen: document.getElementById('history-screen'),
-            learnedWordsScreen: document.getElementById('learned-words-screen'),
+            inProgressScreen: document.getElementById('in-progress-screen'),
             basketScreen: document.getElementById('basket-screen'),
             historyList: document.getElementById('history-list'),
             statsSection: document.getElementById('stats-section'),
@@ -185,10 +202,10 @@
         };
 
         let apiKey = '';
-        let learnedWords = [];
+        let wordsInProgress = [];
+        let masteredWords = [];
         let learningBasket = [];
         let lessonHistory = [];
-        let remainingWords = [...a1Words];
         let audioContext;
         let isLessonActive = false;
         let isDragging = false;
@@ -213,7 +230,7 @@
             allDOMElements.resetProgressBtn.addEventListener('click', handleResetProgress);
             allDOMElements.navHome.addEventListener('click', () => showTab('home'));
             allDOMElements.navHistory.addEventListener('click', () => showTab('history'));
-            allDOMElements.navLearned.addEventListener('click', () => showTab('learned'));
+            allDOMElements.navLearned.addEventListener('click', () => showTab('in-progress'));
             allDOMElements.navBasket.addEventListener('click', () => showTab('basket'));
 
             const lessonArea = allDOMElements.lessonScreen;
@@ -227,7 +244,8 @@
 
         function loadState() {
             apiKey = localStorage.getItem('geminiApiKey') || '';
-            learnedWords = JSON.parse(localStorage.getItem('learnedWords')) || [];
+            wordsInProgress = JSON.parse(localStorage.getItem('wordsInProgress')) || [];
+            masteredWords = JSON.parse(localStorage.getItem('masteredWords')) || [];
             learningBasket = JSON.parse(localStorage.getItem('learningBasket')) || [];
             lessonHistory = JSON.parse(localStorage.getItem('lessonHistory')) || [];
 
@@ -239,22 +257,25 @@
         }
 
         function saveState() {
-            localStorage.setItem('learnedWords', JSON.stringify(learnedWords));
+            localStorage.setItem('wordsInProgress', JSON.stringify(wordsInProgress));
+            localStorage.setItem('masteredWords', JSON.stringify(masteredWords));
             localStorage.setItem('learningBasket', JSON.stringify(learningBasket));
             localStorage.setItem('lessonHistory', JSON.stringify(lessonHistory));
         }
 
         function updateProgress() {
-            remainingWords = a1Words.filter(word => !learnedWords.includes(word));
+            const learnedAndMastered = [...wordsInProgress.map(w => w.word), ...masteredWords];
+            const remainingWords = a1Words.filter(word => !learnedAndMastered.includes(word));
+            
             allDOMElements.totalWordsEl.textContent = a1Words.length;
-            allDOMElements.learnedWordsEl.textContent = learnedWords.length;
+            allDOMElements.learnedWordsEl.textContent = learnedAndMastered.length;
             allDOMElements.remainingWordsEl.textContent = remainingWords.length;
         }
 
         function showScreen(screen) {
             allDOMElements.homeScreen.classList.add('hidden');
             allDOMElements.historyScreen.classList.add('hidden');
-            allDOMElements.learnedWordsScreen.classList.add('hidden');
+            allDOMElements.inProgressScreen.classList.add('hidden');
             allDOMElements.basketScreen.classList.add('hidden');
             allDOMElements.loadingScreen.classList.add('hidden');
             allDOMElements.lessonScreen.classList.add('hidden');
@@ -277,9 +298,9 @@
                 renderHistory();
                 allDOMElements.historyScreen.classList.remove('hidden');
                 allDOMElements.navHistory.classList.add('border-sky-600', 'text-sky-600');
-            } else if (tabName === 'learned') {
-                renderLearnedWords();
-                allDOMElements.learnedWordsScreen.classList.remove('hidden');
+            } else if (tabName === 'in-progress') {
+                renderInProgressWords();
+                allDOMElements.inProgressScreen.classList.remove('hidden');
                 allDOMElements.navLearned.classList.add('border-sky-600', 'text-sky-600');
             } else if (tabName === 'basket') {
                 renderBasket();
@@ -324,13 +345,24 @@
             });
         }
         
-        function selectNewWords() {
-            const count = Math.floor(Math.random() * 6) + 15; // 15 to 20 words
-            const shuffled = remainingWords.sort(() => 0.5 - Math.random());
-            return shuffled.slice(0, count);
+        function selectWordsForLesson() {
+            const targetWordCount = 20; 
+            
+            wordsInProgress.forEach(word => word.lessonCounter++);
+
+            const dueForRepetition = wordsInProgress.filter(item => item.level < 4 && item.lessonCounter >= repetitionIntervals[item.level]);
+            
+            const repetitionWords = dueForRepetition.slice(0, Math.floor(targetWordCount / 2));
+            const newWordsCount = targetWordCount - repetitionWords.length;
+            
+            const learnedAndMastered = [...wordsInProgress.map(w => w.word), ...masteredWords];
+            const remainingWords = a1Words.filter(word => !learnedAndMastered.includes(word));
+            const newWords = remainingWords.sort(() => 0.5 - Math.random()).slice(0, newWordsCount);
+
+            return { newWords, repetitionWords };
         }
 
-        async function generateLesson(words, rewrite = false, isRevision = false) {
+        async function generateLesson(newWords, repetitionWords, rewrite = false, isRevision = false, storyWordCount = 100, customInstructions = '') {
             if (!apiKey) {
                 showModal('الرجاء حفظ مفتاح Gemini API أولاً.');
                 return;
@@ -338,56 +370,49 @@
             isLessonActive = false;
             showScreen(allDOMElements.loadingScreen);
 
-            const lessonType = isRevision ? 'مراجعة' : 'جديد';
+            const lessonWords = [...newWords, ...repetitionWords.map(w => w.word)];
+            const repetitionWordsList = repetitionWords.map(w => w.word);
+            
+            let highlightingInstructions = '';
+            if (repetitionWordsList.length > 0) {
+                highlightingInstructions = `
+                    The words ${newWords.join(', ')} are NEW. Highlight them with <b>tags</b>.
+                    The words ${repetitionWordsList.join(', ')} are for REPETITION. Highlight them with <i>tags</i>.
+                `;
+            } else {
+                highlightingInstructions = `All ${newWords.length} words in this lesson are NEW. Highlight all of them with <b>tags</b>. There are no repetition words.`;
+            }
+
             const prompt = `
-            You are an expert English teacher for absolute beginners (A1 level) who speak Arabic. Your task is to create a lesson using these words: ${words.join(', ')}.
+            You are an expert English teacher for absolute beginners (A1 level) who speak Arabic.
+            Your task is to create a lesson using these ${lessonWords.length} words: ${lessonWords.join(', ')}.
+            ${highlightingInstructions}
 
             **EXTREMELY IMPORTANT RULES:**
             1.  **A1 Level ONLY:** You MUST use ONLY words from the A1 vocabulary list. The grammar and sentence structure must also be strictly A1 level.
-            2.  **SIMPLE SENTENCES:** Use very simple sentences like "Subject + Verb + Object". For example: "I have a cat." or "She likes apples."
-            3.  **DO NOT USE:**
-                * Complex sentences with clauses (like 'if', 'when', 'because').
-                * Modal verbs for suggestion or possibility (like 'could', 'should', 'might'). Only use 'can' for ability.
-                * Advanced tenses. Stick to the Present Simple.
-            4.  **EXAMPLE:**
-                * **GOOD A1 SENTENCE:** "John has a red car. He drives to work."
-                * **BAD SENTENCE (Too complex):** "If John had a car, he could drive to work."
-            5.  **DIVERSIFY CONTENT:** Randomly choose one style:
-                * **Story:** Third-person narrative.
-                * **Dialogue:** Conversation between two people (use English names like "John", "Sarah"). Format as: "John: Hello.\\nSarah: Hi."
-                * **Narrative:** First-person narrative ("I am...").
-            6.  **JSON FORMAT:** The entire response must be a single, valid JSON object with no extra text.
-            7.  **EXERCISES:** The "question" text must be plain text without any markdown like **.
+            2.  **Natural Sentences:** The text should be natural, coherent, and easy to read. You can use longer, connected sentences, but you must strictly ensure that all vocabulary and grammar structures are from the A1 level.
+            3.  **DO NOT USE:** Advanced grammar like conditional sentences ('if'), complex modal verbs ('could', 'should'), or advanced tenses. Stick to the Present Simple and 'can' for ability.
+            4.  **DIVERSIFY CONTENT:** Randomly choose one style: Story, Dialogue (with English names), or Narrative.
+            5.  **JSON FORMAT:** The entire response must be a single, valid JSON object.
+            6.  **EXERCISES:** The "question" text must be plain text without any markdown like **.
+            7.  **STORY LENGTH:** The total length of the story must be approximately ${storyWordCount} words.
+            8.  **CUSTOM INSTRUCTIONS:** Follow these user instructions if provided: "${customInstructions || 'No specific instructions.'}"
 
             ${rewrite ? 'أعد كتابة القصة والتمارين فقط بنفس الكلمات والقواعد السابقة، مع تغيير الأسلوب (قصة، حوار، سرد).' : 'قم بإنشاء درس جديد بالكامل.'}
 
-            **هيكل JSON المطلوب:**
+            **JSON Structure Example (provide all fields):**
             {
-              "story_type": "نوع القصة (story, dialogue, or narrative)",
-              "story_mood": "صفة واحدة تصف الحالة المزاجية للقصة (e.g., happy, calm, exciting, neutral)",
-              "story": "النص الأساسي (قصة أو حوار أو سرد) من 4-5 أسطر. قم بتمييز الكلمات المستهدفة بوسوم <b></b>.",
-              "new_words": [{"word": "الكلمة", "translation": "ترجمتها"}],
-              "grammar_focus": {
-                "title": "عنوان القاعدة النحوية",
-                "explanation": "شرح مطول ومفصل للقاعدة مع سياقها وكيف ظهرت في النص.",
-                "examples": [
-                  {"example": "Example sentence 1", "translation": "ترجمة المثال 1"},
-                  {"example": "Example sentence 2", "translation": "ترجمة المثال 2"}
-                ]
-              },
-              "useful_structures": [
-                {"structure": "التركيب من القصة", "explanation": "شرح استخدامه ومعناه"}
-              ],
-              "pronunciation_tips": {
-                  "title": "نصائح للنطق",
-                  "tips": [
-                      {"context": "الكلمة أو الحرف", "tip": "نصيحة النطق باللغة العربية"}
-                  ]
-              },
+              "story_type": "story",
+              "story_mood": "happy",
+              "story": "A <b>boy</b> has a <i>dog</i>. The dog is <b>big</b>.",
+              "new_words": [{"word": "boy", "translation": "ولد"}, {"word": "big", "translation": "كبير"}],
+              "grammar_focus": { "title": "Using 'a' and 'an'", "explanation": "We use 'a' before consonants and 'an' before vowels.", "examples": [{"example": "a boy", "translation": "ولد"}, {"example": "an apple", "translation": "تفاحة"}] },
+              "useful_structures": [{"structure": "to have", "explanation": "To show possession."}],
+              "pronunciation_tips": { "title": "Pronunciation", "tips": [{"context": "boy", "tip": "Sounds like 'boi'"}] },
               "exercises": [
-                {"type": "fill_in_the_blank", "question": "سؤال املأ الفراغ بالإنجليزية مع ___.", "answer": "الكلمة الصحيحة"},
-                {"type": "multiple_choice", "question": "سؤال اختيار من متعدد.", "options": ["أ", "ب", "ج"], "answer": "الإجابة الصحيحة"},
-                {"type": "true_false", "question": "جملة للحكم عليها.", "answer": "false"}
+                { "type": "fill_in_the_blank", "question": "The ___ is big.", "answer": "dog" },
+                { "type": "multiple_choice", "question": "What does the boy have?", "options": ["a cat", "a dog", "a car"], "answer": "a dog" },
+                { "type": "true_false", "question": "The dog is small.", "answer": "false" }
               ]
             }
             `;
@@ -406,8 +431,23 @@
                 const lessonData = JSON.parse(jsonString);
                 
                 if (!rewrite && !isRevision) {
-                    learnedWords.push(...words);
-                    lessonData.learnedWords = words;
+                    newWords.forEach(word => {
+                        wordsInProgress.push({ word: word, level: 1, lessonCounter: 0 });
+                    });
+
+                    repetitionWords.forEach(repWord => {
+                        const wordIndex = wordsInProgress.findIndex(item => item.word === repWord.word);
+                        if (wordIndex > -1) {
+                            wordsInProgress[wordIndex].level++;
+                            wordsInProgress[wordIndex].lessonCounter = 0;
+                            if (wordsInProgress[wordIndex].level > 3) {
+                                masteredWords.push(wordsInProgress[wordIndex].word);
+                                wordsInProgress.splice(wordIndex, 1);
+                            }
+                        }
+                    });
+                    
+                    lessonData.learnedWords = lessonWords;
                     lessonData.date = new Date().toLocaleString('ar-EG');
                     lessonHistory.unshift(lessonData);
                     if (lessonHistory.length > 20) lessonHistory.pop();
@@ -440,6 +480,20 @@
             const wordsTitle = isRevision ? 'كلمات للمراجعة' : '2. الكلمات الجديدة';
             const storyText = data.story.replace(/<[^>]*>?/gm, '').replace(/\n/g, ' ');
 
+            const optionsHtml = `
+                <div class="max-w-md mx-auto space-y-4 my-6 text-right p-4 border rounded-md bg-slate-50">
+                    <h3 class="text-lg font-bold text-center">خيارات الدرس القادم</h3>
+                    <div>
+                        <label for="word-count-lesson" class="block text-sm font-medium text-slate-700">إجمالي كلمات القصة (تقريبيًا 50-500)</label>
+                        <input type="number" id="word-count-lesson" value="100" min="50" max="500" class="mt-1 block w-full p-2 border border-slate-300 rounded-md shadow-sm">
+                    </div>
+                    <div>
+                        <label for="custom-prompt-lesson" class="block text-sm font-medium text-slate-700">اكتب تعليمات للقصة (اختياري)</label>
+                        <textarea id="custom-prompt-lesson" rows="2" class="mt-1 block w-full p-2 border border-slate-300 rounded-md shadow-sm" placeholder="مثال: قصة عن حيوانات في حديقة..."></textarea>
+                    </div>
+                </div>
+            `;
+
             allDOMElements.lessonScreen.innerHTML = `
                 ${createSection(lessonTitle, 
                     `<div id="story-container" class="text-lg/relaxed font-english lesson-content" dir="ltr" data-mood="${data.story_mood || 'neutral'}">${formatStory(data.story, data.story_type)}</div>
@@ -454,12 +508,26 @@
                     <button id="rewrite-btn" class="bg-amber-500 text-white px-6 py-2 rounded-md hover:bg-amber-600 transition">أعد كتابة القصة بنفس الكلمات</button>
                     <button id="next-lesson-btn" class="bg-sky-600 text-white px-6 py-2 rounded-md hover:bg-sky-700 transition">درس جديد بكلمات جديدة</button>
                 </div>
+                ${optionsHtml}
             `;
             
             renderStoryAudioPlayer(storyText, data.story_mood || 'neutral');
 
-            document.getElementById('rewrite-btn').addEventListener('click', () => generateLesson(data.learnedWords || data.new_words.map(w => w.word), true, isRevision));
-            document.getElementById('next-lesson-btn').addEventListener('click', handleNewLesson);
+            document.getElementById('rewrite-btn').addEventListener('click', () => {
+                const wordCount = document.getElementById('word-count-lesson').value;
+                const customInstructions = document.getElementById('custom-prompt-lesson').value;
+                const newW = data.new_words.filter(w => !w.word.includes(' ')).map(w => w.word);
+                const repW = []; // Simplified for rewrite
+                generateLesson(newW, repW, true, isRevision, wordCount, customInstructions);
+            });
+            document.getElementById('next-lesson-btn').addEventListener('click', () => {
+                const wordCount = document.getElementById('word-count-lesson').value;
+                const customInstructions = document.getElementById('custom-prompt-lesson').value;
+                const { newWords, repetitionWords } = selectWordsForLesson();
+                if (newWords.length > 0 || repetitionWords.length > 0) {
+                    generateLesson(newWords, repetitionWords, false, false, wordCount, customInstructions);
+                }
+            });
             document.getElementById('check-answers-btn').addEventListener('click', checkAnswers);
         }
 
@@ -544,7 +612,7 @@
             let node;
             const textNodes = [];
             while(node = walker.nextNode()) {
-                if (node.parentNode.tagName !== 'B' && node.parentNode.tagName !== 'SPAN') {
+                if (node.parentNode.tagName !== 'B' && node.parentNode.tagName !== 'I' && node.parentNode.tagName !== 'SPAN') {
                      textNodes.push(node);
                 }
             }
@@ -620,16 +688,19 @@
         }
 
         function renderExercises(exercises) {
+            if (!exercises || !Array.isArray(exercises)) {
+                return '<p>لا توجد تمارين لهذا الدرس.</p>';
+            }
             let html = '<div class="space-y-4">';
             exercises.forEach((ex, index) => {
-                const cleanQuestion = ex.question.replace(/\*\*/g, '');
+                const cleanQuestion = ex.question ? ex.question.replace(/\*\*/g, '') : 'سؤال غير متوفر';
                 html += `<div class="exercise p-3 border-r-4 border-slate-200" data-answer="${ex.answer}">`;
                 if (ex.type === 'fill_in_the_blank') {
                     html += `<p class="font-english" dir="ltr">${index + 1}. ${cleanQuestion.replace('___', '<input type="text" class="exercise-input border-b-2 bg-transparent text-center w-24 mx-1">')}</p>`;
                 } else if (ex.type === 'multiple_choice') {
                     html += `<p class="font-english" dir="ltr">${index + 1}. ${cleanQuestion}</p>
                              <div class="flex flex-wrap gap-2 mt-2" dir="ltr">
-                                ${ex.options.map(opt => `<label class="flex items-center gap-2 p-2 border rounded-md cursor-pointer"><input type="radio" name="ex${index}" value="${opt}" class="exercise-input">${opt}</label>`).join('')}
+                                ${(ex.options && Array.isArray(ex.options)) ? ex.options.map(opt => `<label class="flex items-center gap-2 p-2 border rounded-md cursor-pointer"><input type="radio" name="ex${index}" value="${opt}" class="exercise-input"> ${opt}</label>`).join('') : '<p class="text-red-500">خطأ: لم يتم توفير الخيارات لهذا السؤال.</p>'}
                              </div>`;
                 } else if (ex.type === 'true_false') {
                      html += `<p class="font-english" dir="ltr">${index + 1}. ${cleanQuestion}</p>
@@ -649,7 +720,7 @@
             const exercises = document.querySelectorAll('.exercise');
             let correctCount = 0;
             exercises.forEach(ex => {
-                const correctAnswer = ex.dataset.answer.toLowerCase();
+                const correctAnswer = ex.dataset.answer ? ex.dataset.answer.toLowerCase() : '';
                 const inputs = ex.querySelectorAll('.exercise-input');
                 let userAnswer = '';
                 ex.classList.remove('border-green-400', 'border-red-400');
@@ -677,9 +748,12 @@
         }
 
         function handleNewLesson() {
-            const newWords = selectNewWords();
-            if (newWords.length > 0) {
-                generateLesson(newWords, false, false);
+            const wordCount = document.getElementById('word-count-home').value;
+            const customInstructions = document.getElementById('custom-prompt-home').value;
+            const { newWords, repetitionWords } = selectWordsForLesson();
+
+            if (newWords.length > 0 || repetitionWords.length > 0) {
+                generateLesson(newWords, repetitionWords, false, false, wordCount, customInstructions);
             } else {
                 isLessonActive = false;
                 showScreen(allDOMElements.homeScreen);
@@ -687,9 +761,12 @@
         }
 
         function handleRevisionLesson() {
-            const wordsForRevision = [...learnedWords].sort(() => 0.5 - Math.random()).slice(0, 15);
+            const wordCount = document.getElementById('word-count-review').value;
+            const customInstructions = document.getElementById('custom-prompt-review').value;
+            const wordsForRevision = [...wordsInProgress.map(w => w.word), ...masteredWords].sort(() => 0.5 - Math.random()).slice(0, 20);
+            
             if (wordsForRevision.length > 0) {
-                generateLesson(wordsForRevision, false, true);
+                generateLesson([], wordsForRevision.map(w => ({word: w})), false, true, wordCount, customInstructions);
             }
         }
 
@@ -722,8 +799,8 @@
                     if (event.type === 'touchend') event.preventDefault();
                     showSelectionPopup(selection);
                 }
-                else if (!isDragging && event.target.closest('.word-span, b')) {
-                    const target = event.target.closest('.word-span, b');
+                else if (!isDragging && event.target.closest('.word-span, b, i')) {
+                    const target = event.target.closest('.word-span, b, i');
                     const text = target.textContent.trim().replace(/[.,!?;:]/g, '');
                     if (text) {
                         showWordTranslationModal(text);
@@ -786,7 +863,7 @@
                     }
                 },
                 {
-                    text: '💾 حفظ للسلة',
+                    text: '💾 حفظ للمراجعة',
                     class: 'action-save-btn bg-amber-500 text-white',
                     callback: () => saveToBasket(text, translation)
                 }
@@ -799,7 +876,7 @@
             const translation = await callGeminiForSimpleText(prompt);
             if (translation && showModalWithSaveButton) {
                 const actions = [{
-                    text: '💾 حفظ في السلة',
+                    text: '💾 حفظ للمراجعة',
                     class: 'save-to-basket-btn bg-green-500 text-white hover:bg-green-600',
                     callback: () => saveToBasket(text, translation)
                 }];
@@ -843,46 +920,89 @@
 
             const isAlreadySaved = learningBasket.some(item => item.en.toLowerCase() === englishText.toLowerCase());
             if (isAlreadySaved) {
-                showModal(`"${englishText}" <br><br> موجودة بالفعل في سلة التعلم.`);
+                showModal(`"${englishText}" <br><br> موجودة بالفعل في سلة المراجعة.`);
                 return;
             }
             
             learningBasket.unshift({ id: Date.now(), en: englishText, ar: translation });
             saveState();
-            showModal(`"${englishText}" <br><br> تم حفظها بنجاح في سلة التعلم!`);
+            showModal(`"${englishText}" <br><br> تم حفظها بنجاح في سلة المراجعة!`);
         }
 
-        function renderLearnedWords() {
-            const container = allDOMElements.learnedWordsScreen;
-            const buttonHtml = learnedWords.length >= 15
-                ? `<div class="text-center mb-6"><button id="review-lesson-btn" class="bg-sky-600 text-white px-6 py-2 rounded-md hover:bg-sky-700 transition">مراجعة بقصة جديدة</button></div>`
-                : `<p class="text-center text-slate-500 mb-6">تحتاج لتعلم ${15 - learnedWords.length} كلمات أخرى على الأقل لبدء المراجعة بقصة.</p>`;
+        function renderInProgressWords() {
+            const container = allDOMElements.inProgressScreen;
+            
+            const optionsHtml = `
+                <div class="max-w-md mx-auto space-y-4 mb-6 text-right p-4 border rounded-md bg-slate-50">
+                    <h3 class="text-lg font-bold text-center">خيارات المراجعة</h3>
+                    <div>
+                        <label for="word-count-review" class="block text-sm font-medium text-slate-700">إجمالي كلمات القصة (تقريبيًا 50-500)</label>
+                        <input type="number" id="word-count-review" value="100" min="50" max="500" class="mt-1 block w-full p-2 border border-slate-300 rounded-md shadow-sm">
+                    </div>
+                    <div>
+                        <label for="custom-prompt-review" class="block text-sm font-medium text-slate-700">اكتب تعليمات للقصة (اختياري)</label>
+                        <textarea id="custom-prompt-review" rows="2" class="mt-1 block w-full p-2 border border-slate-300 rounded-md shadow-sm" placeholder="مثال: حوار قصير بين شخصين في مطعم..."></textarea>
+                    </div>
+                </div>
+            `;
 
-            const wordsHtml = learnedWords.length === 0 
-                ? '<p class="text-center text-slate-500">لم تتعلم أي كلمات بعد. ابدأ درساً جديداً!</p>'
+            const buttonHtml = wordsInProgress.length >= 15
+                ? `<div class="text-center mb-6"><button id="review-lesson-btn" class="bg-sky-600 text-white px-6 py-2 rounded-md hover:bg-sky-700 transition">مراجعة بقصة جديدة</button></div>`
+                : `<p class="text-center text-slate-500 mb-6">تحتاج لوجود ${15 - wordsInProgress.length} كلمات أخرى على الأقل هنا لبدء المراجعة بقصة.</p>`;
+
+            const wordsHtml = wordsInProgress.length === 0 
+                ? '<p class="text-center text-slate-500">لا توجد كلمات قيد التعلم حالياً.</p>'
                 : `<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    ${[...learnedWords].sort().map(word => `
-                        <div class="font-english p-3 border rounded-md text-center cursor-pointer hover:bg-sky-100" onclick="handleLearnedWordClick('${word}')">
-                            ${word}
+                    ${[...wordsInProgress].sort((a,b) => a.word.localeCompare(b.word)).map(item => `
+                        <div class="p-3 border rounded-md text-center cursor-pointer hover:bg-sky-100 flex flex-col justify-between" onclick="handleInProgressWordClick('${item.word}')">
+                            <span class="font-english font-bold">${item.word}</span>
+                            <span class="text-xs text-slate-500 mt-1">المستوى ${item.level}</span>
                         </div>
                     `).join('')}
                    </div>`;
             
-            container.innerHTML = createSection('الكلمات التي تعلمتها', buttonHtml + wordsHtml);
+            container.innerHTML = createSection('كلمات قيد التعلم', optionsHtml + buttonHtml + wordsHtml);
 
-            if (learnedWords.length >= 15) {
+            if (wordsInProgress.length >= 15) {
                 document.getElementById('review-lesson-btn').addEventListener('click', handleRevisionLesson);
             }
         }
         
-        async function handleLearnedWordClick(word) {
-            showWordTranslationModal(word);
+        async function handleInProgressWordClick(word) {
+            const actions = [
+                {
+                    text: '✅ أتقنتها',
+                    class: 'master-word-btn bg-green-500 text-white hover:bg-green-600',
+                    callback: () => masterWord(word)
+                },
+                 {
+                    text: '💾 إضافة للمراجعة',
+                    class: 'add-to-basket-btn bg-amber-500 text-white hover:bg-amber-600',
+                    callback: async () => {
+                        const translation = await getTranslation(word, false);
+                        if (translation) saveToBasket(word, translation);
+                    }
+                }
+            ];
+            showModal(`ماذا تريد أن تفعل بالكلمة؟`, `<span class="font-english text-3xl">${word}</span>`, actions);
+        }
+
+        function masterWord(wordToMaster) {
+            const wordIndex = wordsInProgress.findIndex(item => item.word === wordToMaster);
+            if (wordIndex > -1) {
+                masteredWords.push(wordsInProgress[wordIndex].word);
+                wordsInProgress.splice(wordIndex, 1);
+                saveState();
+                updateProgress();
+                renderInProgressWords(); // Re-render the list
+                showModal(`تم نقل "${wordToMaster}" إلى قائمة الكلمات المتقنة.`, 'تم بنجاح');
+            }
         }
 
         function renderBasket() {
             const basketContainer = allDOMElements.basketScreen;
             if (learningBasket.length === 0) {
-                basketContainer.innerHTML = createSection('سلة التعلم', '<p class="text-center text-slate-500">سلّتك فارغة. ابدأ بحفظ الكلمات والجمل لمراجعتها هنا.</p>');
+                basketContainer.innerHTML = createSection('سلة المراجعة', '<p class="text-center text-slate-500">سلّتك فارغة. ابدأ بحفظ الكلمات والجمل لمراجعتها هنا.</p>');
                 return;
             }
 
@@ -1068,7 +1188,8 @@
         
         function handleResetProgress() {
             if (window.confirm('هل أنت متأكد أنك تريد إعادة تعيين كل تقدمك؟ سيتم حذف جميع الكلمات والدروس المحفوظة.')) {
-                learnedWords = [];
+                wordsInProgress = [];
+                masteredWords = [];
                 learningBasket = [];
                 lessonHistory = [];
                 isLessonActive = false;
