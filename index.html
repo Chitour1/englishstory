@@ -116,7 +116,7 @@
                  </button>
             </div>
 
-            <div class="text-center my-4 text-slate-500 font-bold">أو</div>
+            <div id="or-divider" class="text-center my-4 text-slate-500 font-bold">أو</div>
 
             <div id="api-key-section" class="mb-6 p-4 bg-white rounded-lg shadow-md">
                 <div class="flex items-center gap-3 mb-3">
@@ -214,6 +214,7 @@
         const allDOMElements = {
             entrySection: document.getElementById('entry-section'),
             googleSigninSection: document.getElementById('google-signin-section'),
+            orDivider: document.getElementById('or-divider'),
             authorizeButton: document.getElementById('authorize_button'),
             signOutBtn: document.getElementById('sign-out-btn'),
             userInfo: document.getElementById('user-info'),
@@ -265,6 +266,13 @@
                 gapi.load('client', gapiLoaded);
                 gisInited = true;
             };
+
+            // Check for saved API key on startup
+            const savedApiKey = localStorage.getItem('geminiApiKey');
+            if (savedApiKey) {
+                apiKey = savedApiKey;
+                allDOMElements.apiKeyInput.value = apiKey;
+            }
         }
 
         function setupEventListeners() {
@@ -298,24 +306,17 @@
                 lessonHistory = dataFromDrive.lessonHistory || [];
             } else {
                 // Fallback to localStorage
-                apiKey = localStorage.getItem('geminiApiKey') || '';
                 wordsInProgress = JSON.parse(localStorage.getItem('wordsInProgress')) || [];
                 masteredWords = JSON.parse(localStorage.getItem('masteredWords')) || [];
                 learningBasket = JSON.parse(localStorage.getItem('learningBasket')) || [];
                 lessonHistory = JSON.parse(localStorage.getItem('lessonHistory')) || [];
             }
-
-            if (apiKey) {
-                allDOMElements.apiKeyInput.value = apiKey;
-                allDOMElements.entrySection.classList.add('hidden');
-                allDOMElements.mainContent.classList.remove('hidden');
-            }
             updateProgress();
         }
 
-        function saveState() {
+        async function saveState() {
             if (isGoogleLoggedIn) {
-                saveStateToDrive();
+                await saveStateToDrive();
             } else {
                 // Fallback to localStorage if not logged in
                 localStorage.setItem('wordsInProgress', JSON.stringify(wordsInProgress));
@@ -513,7 +514,7 @@
                     lessonData.date = new Date().toLocaleString('ar-EG');
                     lessonHistory.unshift(lessonData);
                     if (lessonHistory.length > 20) lessonHistory.pop();
-                    saveState();
+                    await saveState();
                     updateProgress();
                 }
                 
@@ -987,7 +988,7 @@
             }
             
             learningBasket.unshift({ id: Date.now(), en: englishText, ar: translation });
-            saveState();
+            await saveState();
             showModal(`"${englishText}" <br><br> تم حفظها بنجاح في سلة المراجعة!`);
         }
 
@@ -1049,12 +1050,12 @@
             showModal(`ماذا تريد أن تفعل بالكلمة؟`, `<span class="font-english text-3xl">${word}</span>`, actions);
         }
 
-        function masterWord(wordToMaster) {
+        async function masterWord(wordToMaster) {
             const wordIndex = wordsInProgress.findIndex(item => item.word === wordToMaster);
             if (wordIndex > -1) {
                 masteredWords.push(wordsInProgress[wordIndex].word);
                 wordsInProgress.splice(wordIndex, 1);
-                saveState();
+                await saveState();
                 updateProgress();
                 renderInProgressWords(); // Re-render the list
                 showModal(`تم نقل "${wordToMaster}" إلى قائمة الكلمات المتقنة.`, 'تم بنجاح');
@@ -1243,12 +1244,16 @@
                 localStorage.setItem('geminiApiKey', key);
                 allDOMElements.entrySection.classList.add('hidden');
                 allDOMElements.mainContent.classList.remove('hidden');
+                // Load local data after saving key if not logged in
+                if (!isGoogleLoggedIn) {
+                    loadState();
+                }
             } else {
                 showModal('الرجاء إدخال مفتاح API صحيح.');
             }
         }
         
-        function handleResetProgress() {
+        async function handleResetProgress() {
             const resetConfirmed = window.confirm('هل أنت متأكد أنك تريد إعادة تعيين كل تقدمك؟ سيتم حذف جميع الكلمات والدروس المحفوظة.');
             if (resetConfirmed) {
                 wordsInProgress = [];
@@ -1257,8 +1262,7 @@
                 lessonHistory = [];
                 isLessonActive = false;
                 
-                // This will either save an empty state to Drive or clear localStorage
-                saveState(); 
+                await saveState(); 
                 
                 updateProgress();
                 showTab('home');
@@ -1272,10 +1276,7 @@
         }
 
         async function initializeGapiClient() {
-            await gapi.client.init({
-                // API KEY is not needed for OAuth2 flow
-                // discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
-            });
+            await gapi.client.init({});
             gapiInited = true;
         }
 
@@ -1285,19 +1286,26 @@
                 scope: SCOPES,
                 callback: async (resp) => {
                     if (resp.error !== undefined) {
-                        throw (resp);
+                        console.error(resp);
+                        showModal('حدث خطأ أثناء تسجيل الدخول. يرجى المحاولة مرة أخرى.');
+                        return;
                     }
                     isGoogleLoggedIn = true;
-                    document.getElementById('entry-section').classList.add('hidden');
-                    document.getElementById('main-content').classList.remove('hidden');
-                    document.getElementById('sign-out-btn').classList.remove('hidden');
+                    allDOMElements.googleSigninSection.classList.add('hidden');
+                    allDOMElements.orDivider.classList.add('hidden');
+                    allDOMElements.signOutBtn.classList.remove('hidden');
                     
-                    // Load user data from Drive
                     await loadStateFromDrive();
+
+                    if (!apiKey) {
+                        showModal('تم تسجيل الدخول بنجاح! الآن يرجى إدخال مفتاح Gemini API الخاص بك لبدء التعلم.');
+                    } else {
+                        allDOMElements.entrySection.classList.add('hidden');
+                        allDOMElements.mainContent.classList.remove('hidden');
+                    }
                 },
             });
             
-            // This prevents the redirect_uri error by using the popup flow
             tokenClient.requestAccessToken({prompt: 'consent'});
         }
 
@@ -1308,10 +1316,12 @@
                     gapi.client.setToken('');
                     isGoogleLoggedIn = false;
                     driveFileId = null;
-                    document.getElementById('entry-section').classList.remove('hidden');
-                    document.getElementById('main-content').classList.add('hidden');
-                    document.getElementById('sign-out-btn').classList.add('hidden');
-                    // Reset to initial state
+                    allDOMElements.entrySection.classList.remove('hidden');
+                    allDOMElements.googleSigninSection.classList.remove('hidden');
+                    allDOMElements.orDivider.classList.remove('hidden');
+                    allDOMElements.mainContent.classList.add('hidden');
+                    allDOMElements.signOutBtn.classList.add('hidden');
+                    // Reset to initial local state
                     loadState(); 
                 });
             }
@@ -1321,7 +1331,6 @@
             try {
                 await gapi.client.load('https://www.googleapis.com/discovery/v1/apis/drive/v3/rest');
                 
-                // 1. Find the data file
                 const response = await gapi.client.drive.files.list({
                     q: `name='${DATA_FILE_NAME}' and 'appDataFolder' in parents`,
                     spaces: 'appDataFolder',
@@ -1330,16 +1339,14 @@
 
                 if (response.result.files && response.result.files.length > 0) {
                     driveFileId = response.result.files[0].id;
-                    // 2. If file exists, get its content
                     const fileContentResponse = await gapi.client.drive.files.get({
                         fileId: driveFileId,
                         alt: 'media'
                     });
                     const data = JSON.parse(fileContentResponse.body);
-                    loadState(data); // Load data into the app
+                    loadState(data);
                 } else {
-                    // 3. If file doesn't exist, load default empty state
-                    loadState();
+                    loadState(); // Load default empty state
                 }
             } catch (err) {
                 console.error("Error loading data from Drive:", err);
@@ -1349,7 +1356,7 @@
         }
 
         async function saveStateToDrive() {
-            if (!isGoogleLoggedIn) return;
+            if (!isGoogleLoggedIn || !gapi.client.getToken()) return;
 
             const appState = {
                 wordsInProgress,
@@ -1365,10 +1372,10 @@
                 'mimeType': 'application/json',
             };
             
+            const form = new FormData();
+            
             if (driveFileId) {
-                // Update existing file
-                const form = new FormData();
-                form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+                form.append('metadata', new Blob([JSON.stringify({})], { type: 'application/json' })); // Empty metadata for update
                 form.append('file', blob);
                 
                 await fetch(`https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=multipart`, {
@@ -1377,9 +1384,7 @@
                     body: form
                 });
             } else {
-                // Create new file
                 metadata.parents = ['appDataFolder'];
-                const form = new FormData();
                 form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
                 form.append('file', blob);
 
