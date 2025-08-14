@@ -197,8 +197,8 @@
 
     <script>
         // --- START: Google Drive Integration Configuration ---
-        const CLIENT_ID = '484856738377-c2ng08gfa9sstobj8ilji7vduk47qa3p.apps.googleusercontent.com'; // ⚠️ هام: استبدل هذا
-        const SCOPES = 'https://www.googleapis.com/auth/drive.appdata';
+        const CLIENT_ID = '<<< أدخل CLIENT_ID الخاص بك هنا'; // ⚠️ هام: استبدل هذا
+        const SCOPES = 'https://www.googleapis.com/auth/drive.file';
         const DATA_FILE_NAME = 'language_story_data.json';
         let tokenClient;
         let gapiInited = false;
@@ -1332,8 +1332,8 @@
                 await gapi.client.load('https://www.googleapis.com/discovery/v1/apis/drive/v3/rest');
                 
                 const response = await gapi.client.drive.files.list({
-                    q: `name='${DATA_FILE_NAME}' and 'appDataFolder' in parents`,
-                    spaces: 'appDataFolder',
+                    q: `name='${DATA_FILE_NAME}' and trashed = false`,
+                    spaces: 'drive',
                     fields: 'files(id, name)'
                 });
 
@@ -1358,43 +1358,54 @@
         async function saveStateToDrive() {
             if (!isGoogleLoggedIn || !gapi.client.getToken()) return;
 
-            const appState = {
-                wordsInProgress,
-                masteredWords,
-                learningBasket,
-                lessonHistory
-            };
-            const fileContent = JSON.stringify(appState);
-            const blob = new Blob([fileContent], { type: 'application/json' });
+            try {
+                const appState = {
+                    wordsInProgress,
+                    masteredWords,
+                    learningBasket,
+                    lessonHistory
+                };
+                const fileContent = JSON.stringify(appState);
+                const blob = new Blob([fileContent], { type: 'application/json' });
 
-            const metadata = {
-                'name': DATA_FILE_NAME,
-                'mimeType': 'application/json',
-            };
-            
-            const form = new FormData();
-            
-            if (driveFileId) {
-                form.append('metadata', new Blob([JSON.stringify({})], { type: 'application/json' })); // Empty metadata for update
-                form.append('file', blob);
+                const metadata = {
+                    'name': DATA_FILE_NAME,
+                    'mimeType': 'application/json',
+                };
                 
-                await fetch(`https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=multipart`, {
-                    method: 'PATCH',
-                    headers: new Headers({ 'Authorization': `Bearer ${gapi.client.getToken().access_token}` }),
-                    body: form
-                });
-            } else {
-                metadata.parents = ['appDataFolder'];
-                form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-                form.append('file', blob);
+                const form = new FormData();
+                
+                if (driveFileId) {
+                    // Update existing file
+                    form.append('metadata', new Blob([JSON.stringify({})], { type: 'application/json' }));
+                    form.append('file', blob);
+                    
+                    const updateResponse = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=multipart`, {
+                        method: 'PATCH',
+                        headers: new Headers({ 'Authorization': `Bearer ${gapi.client.getToken().access_token}` }),
+                        body: form
+                    });
+                     if (!updateResponse.ok) throw new Error('Failed to update file in Drive.');
 
-                const createResponse = await fetch(`https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`, {
-                    method: 'POST',
-                    headers: new Headers({ 'Authorization': `Bearer ${gapi.client.getToken().access_token}` }),
-                    body: form
-                });
-                const result = await createResponse.json();
-                driveFileId = result.id;
+                } else {
+                    // Create new file
+                    form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+                    form.append('file', blob);
+
+                    const createResponse = await fetch(`https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`, {
+                        method: 'POST',
+                        headers: new Headers({ 'Authorization': `Bearer ${gapi.client.getToken().access_token}` }),
+                        body: form
+                    });
+                    
+                    if (!createResponse.ok) throw new Error('Failed to create file in Drive.');
+                    
+                    const result = await createResponse.json();
+                    driveFileId = result.id;
+                }
+            } catch (error) {
+                console.error("Error saving data to Drive:", error);
+                showModal("حدث خطأ أثناء حفظ تقدمك في Google Drive. قد لا يتم حفظ آخر التغييرات.");
             }
         }
         // --- END: Google Drive Integration Functions ---
