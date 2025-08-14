@@ -197,7 +197,7 @@
 
     <script>
         // --- START: Google Drive Integration Configuration ---
-        const CLIENT_ID = '484856738377-c2ng08gfa9sstobj8ilji7vduk47qa3p.apps.googleusercontent.com'; // ⚠️ هام: استبدل هذا
+        const CLIENT_ID = '<<< أدخل CLIENT_ID الخاص بك هنا'; // ⚠️ هام: استبدل هذا
         const SCOPES = 'https://www.googleapis.com/auth/drive.file';
         const DATA_FILE_NAME = 'language_story_data.json';
         let tokenClient;
@@ -1332,8 +1332,7 @@
                 await gapi.client.load('https://www.googleapis.com/discovery/v1/apis/drive/v3/rest');
                 
                 const response = await gapi.client.drive.files.list({
-                    q: `name='${DATA_FILE_NAME}' and trashed = false`,
-                    spaces: 'drive',
+                    q: `name='${DATA_FILE_NAME}' and 'root' in parents and trashed = false`,
                     fields: 'files(id, name)'
                 });
 
@@ -1346,7 +1345,8 @@
                     const data = JSON.parse(fileContentResponse.body);
                     loadState(data);
                 } else {
-                    loadState(); // Load default empty state
+                    driveFileId = null; 
+                    loadState(); 
                 }
             } catch (err) {
                 console.error("Error loading data from Drive:", err);
@@ -1366,43 +1366,47 @@
                     lessonHistory
                 };
                 const fileContent = JSON.stringify(appState);
-                
-                const boundary = '-------314159265358979323846';
-                const delimiter = "\r\n--" + boundary + "\r\n";
-                const close_delim = "\r\n--" + boundary + "--";
+                const blob = new Blob([fileContent], { type: 'application/json' });
 
                 const metadata = {
                     'name': DATA_FILE_NAME,
                     'mimeType': 'application/json',
                 };
                 
-                const multipartRequestBody =
-                    delimiter +
-                    'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
-                    JSON.stringify(metadata) +
-                    delimiter +
-                    'Content-Type: application/json\r\n\r\n' +
-                    fileContent +
-                    close_delim;
+                const form = new FormData();
 
-                const request = gapi.client.request({
-                    'path': `/upload/drive/v3/files${driveFileId ? '/' + driveFileId : ''}`,
-                    'method': driveFileId ? 'PATCH' : 'POST',
-                    'params': {'uploadType': 'multipart'},
-                    'headers': {
-                        'Content-Type': 'multipart/related; boundary="' + boundary + '"'
-                    },
-                    'body': multipartRequestBody
-                });
+                if (driveFileId) {
+                    // Update existing file
+                    form.append('metadata', new Blob([JSON.stringify({})], { type: 'application/json' }));
+                    form.append('file', blob);
+                    
+                    const response = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=multipart`, {
+                        method: 'PATCH',
+                        headers: new Headers({ 'Authorization': `Bearer ${gapi.client.getToken().access_token}` }),
+                        body: form
+                    });
+                    if (!response.ok) {
+                        const errorBody = await response.json();
+                        throw new Error(`Failed to update file: ${JSON.stringify(errorBody)}`);
+                    }
+                } else {
+                    // Create new file in the root folder
+                    metadata.parents = ['root'];
+                    form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+                    form.append('file', blob);
 
-                const response = await request;
-
-                if (!driveFileId && response.result.id) {
-                    driveFileId = response.result.id;
+                    const response = await fetch(`https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`, {
+                        method: 'POST',
+                        headers: new Headers({ 'Authorization': `Bearer ${gapi.client.getToken().access_token}` }),
+                        body: form
+                    });
+                     if (!response.ok) {
+                        const errorBody = await response.json();
+                        throw new Error(`Failed to create file: ${JSON.stringify(errorBody)}`);
+                    }
+                    const result = await response.json();
+                    driveFileId = result.id;
                 }
-                
-                return response;
-
             } catch (error) {
                 console.error("Error saving data to Drive:", error);
                 showModal("حدث خطأ أثناء حفظ تقدمك في Google Drive. قد لا يتم حفظ آخر التغييرات.");
