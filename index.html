@@ -8,6 +8,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Google API Libraries -->
+    <script src="https://apis.google.com/js/api.js" async defer></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         body {
             font-family: 'Cairo', sans-serif;
@@ -90,20 +93,41 @@
 
     <div id="app" class="container mx-auto p-4 md:p-8 max-w-4xl">
         
-        <header class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-sky-600 mb-2">قصتي اللغوية</h1>
-            <p class="text-lg text-slate-600">تعلم مفردات الإنجليزية من خلال قصص يصنعها الذكاء الاصطناعي</p>
+        <header class="text-center mb-8 flex justify-between items-center">
+             <div id="auth-container" class="w-1/3 text-left">
+                 <button id="sign-out-btn" class="hidden bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition text-sm">تسجيل الخروج</button>
+                 <span id="user-info" class="hidden text-sm text-slate-600"></span>
+             </div>
+             <div class="w-1/3">
+                <h1 class="text-4xl font-bold text-sky-600 mb-2">قصتي اللغوية</h1>
+                <p class="text-lg text-slate-600">تعلم الإنجليزية من خلال قصص يصنعها الذكاء الاصطناعي</p>
+             </div>
+             <div class="w-1/3"></div> <!-- Spacer -->
         </header>
 
-        <div id="api-key-section" class="mb-6 p-4 bg-white rounded-lg shadow-md">
-            <div class="flex items-center gap-3 mb-3">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-500"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4c0-1.1.9-2 2-2h8a2 2 0 0 1 2 2v5Z"/><path d="M18 9h2a2 2 0 0 1 2 2v10l-4-4H8a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h2"/><path d="M22 12h-2"/><path d="M18 12h-2"/></svg>
-                <h2 class="text-xl font-bold">مفتاح Gemini API</h2>
+        <div id="entry-section">
+            <!-- Google Sign-In Section -->
+            <div id="google-signin-section" class="mb-6 p-6 bg-white rounded-lg shadow-md text-center">
+                 <h2 class="text-2xl font-bold mb-3">الخيار 1 (الموصى به): الحفظ السحابي</h2>
+                 <p class="text-slate-600 mb-6">لحفظ تقدمك ومزامنته عبر الأجهزة، سجل الدخول باستخدام حساب Google.</p>
+                 <button id="authorize_button" class="bg-blue-600 text-white px-6 py-3 rounded-lg text-lg font-bold hover:bg-blue-700 transition transform hover:scale-105 inline-flex items-center gap-3">
+                    <svg class="w-6 h-6" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" xmlns:xlink="http://www.w3.org/1999/xlink" style="display: block;"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path><path fill="none" d="M0 0h48v48H0z"></path></svg>
+                    تسجيل الدخول باستخدام Google
+                 </button>
             </div>
-            <p class="text-slate-600 mb-3 text-sm">لاستخدام التطبيق، يرجى إدخال مفتاح Gemini API الخاص بك. يمكنك الحصول عليه من <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-sky-600 hover:underline">Google AI Studio</a>.</p>
-            <div class="flex flex-col sm:flex-row gap-2">
-                <input type="password" id="api-key-input" class="flex-grow p-2 border rounded-md font-english" placeholder="أدخل مفتاحك هنا...">
-                <button id="save-api-key-btn" class="bg-sky-600 text-white px-6 py-2 rounded-md hover:bg-sky-700 transition">حفظ وبدء</button>
+
+            <div class="text-center my-4 text-slate-500 font-bold">أو</div>
+
+            <div id="api-key-section" class="mb-6 p-4 bg-white rounded-lg shadow-md">
+                <div class="flex items-center gap-3 mb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-500"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4c0-1.1.9-2 2-2h8a2 2 0 0 1 2 2v5Z"/><path d="M18 9h2a2 2 0 0 1 2 2v10l-4-4H8a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h2"/><path d="M22 12h-2"/><path d="M18 12h-2"/></svg>
+                    <h2 class="text-xl font-bold">الخيار 2: الحفظ المحلي (يتطلب مفتاح API)</h2>
+                </div>
+                <p class="text-slate-600 mb-3 text-sm">للتشغيل بدون تسجيل دخول (سيتم حفظ التقدم في هذا المتصفح فقط)، أدخل مفتاح Gemini API الخاص بك. يمكنك الحصول عليه من <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-sky-600 hover:underline">Google AI Studio</a>.</p>
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <input type="password" id="api-key-input" class="flex-grow p-2 border rounded-md font-english" placeholder="أدخل مفتاحك هنا...">
+                    <button id="save-api-key-btn" class="bg-sky-600 text-white px-6 py-2 rounded-md hover:bg-sky-700 transition">حفظ وبدء</button>
+                </div>
             </div>
         </div>
 
@@ -172,11 +196,27 @@
     </div>
 
     <script>
+        // --- START: Google Drive Integration Configuration ---
+        const CLIENT_ID = '484856738377-c2ng08gfa9sstobj8ilji7vduk47qa3p.apps.googleusercontent.com'; // ⚠️ هام: استبدل هذا
+        const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+        const DATA_FILE_NAME = 'language_story_data.json';
+        let tokenClient;
+        let gapiInited = false;
+        let gisInited = false;
+        let driveFileId = null;
+        let isGoogleLoggedIn = false;
+        // --- END: Google Drive Integration Configuration ---
+
         const a1Words = ['a', 'an', 'about', 'above', 'across', 'action', 'activity', 'actor', 'actress', 'add', 'address', 'adult', 'advice', 'afraid', 'after', 'afternoon', 'again', 'age', 'ago', 'agree', 'air', 'airport', 'all', 'also', 'always', 'amazing', 'and', 'angry', 'animal', 'another', 'answer', 'any', 'anyone', 'anything', 'apartment', 'apple', 'April', 'area', 'arm', 'around', 'arrive', 'art', 'article', 'artist', 'as', 'ask', 'at', 'August', 'aunt', 'autumn', 'away', 'baby', 'back', 'bad', 'bag', 'ball', 'banana', 'band', 'bank', 'bath', 'bathroom', 'be', 'beach', 'beautiful', 'because', 'become', 'bed', 'bedroom', 'beer', 'before', 'begin', 'beginning', 'behind', 'believe', 'below', 'best', 'better', 'between', 'bicycle', 'big', 'bike', 'bill', 'bird', 'birthday', 'black', 'blog', 'blonde', 'blue', 'boat', 'body', 'book', 'boot', 'bored', 'boring', 'born', 'both', 'bottle', 'box', 'boy', 'boyfriend', 'bread', 'break', 'breakfast', 'bring', 'brother', 'brown', 'build', 'building', 'bus', 'business', 'busy', 'but', 'butter', 'buy', 'by', 'bye', 'cafe', 'cake', 'call', 'camera', 'can', 'cannot', 'capital', 'car', 'card', 'career', 'carrot', 'carry', 'cat', 'CD', 'cent', 'centre', 'century', 'chair', 'change', 'chart', 'cheap', 'check', 'cheese', 'chicken', 'child', 'chocolate', 'choose', 'cinema', 'city', 'class', 'classroom', 'clean', 'climb', 'clock', 'close', 'clothes', 'club', 'coat', 'coffee', 'cold', 'college', 'colour', 'come', 'common', 'company', 'compare', 'complete', 'computer', 'concert', 'conversation', 'cook', 'cooking', 'cool', 'correct', 'cost', 'could', 'country', 'course', 'cousin', 'cow', 'cream', 'create', 'culture', 'cup', 'customer', 'cut', 'dad', 'dance', 'dancer', 'dancing', 'dangerous', 'dark', 'date', 'daughter', 'day', 'dear', 'December', 'decide', 'delicious', 'describe', 'description', 'design', 'desk', 'detail', 'dialogue', 'dictionary', 'die', 'diet', 'difference', 'different', 'difficult', 'dinner', 'dirty', 'discuss', 'dish', 'do', 'doctor', 'dog', 'dollar', 'door', 'down', 'downstairs', 'draw', 'dress', 'drink', 'drive', 'driver', 'during', 'DVD', 'each', 'ear', 'early', 'east', 'easy', 'eat', 'egg', 'eight', 'eighteen', 'eighty', 'elephant', 'eleven', 'else', 'email', 'end', 'enjoy', 'enough', 'euro', 'even', 'evening', 'event', 'ever', 'every', 'everybody', 'everyone', 'everything', 'exam', 'example', 'excited', 'exciting', 'exercise', 'expensive', 'explain', 'extra', 'eye', 'face', 'fact', 'fall', 'false', 'family', 'famous', 'fantastic', 'far', 'farm', 'farmer', 'fast', 'fat', 'father', 'favourite', 'February', 'feel', 'feeling', 'festival', 'few', 'fifteen', 'fifth', 'fifty', 'fill', 'film', 'final', 'find', 'fine', 'finish', 'fire', 'first', 'fish', 'five', 'flat', 'flight', 'floor', 'flower', 'fly', 'follow', 'food', 'foot', 'football', 'for', 'forget', 'form', 'forty', 'four', 'fourteen', 'fourth', 'free', 'Friday', 'friend', 'friendly', 'from', 'front', 'fruit', 'full', 'fun', 'funny', 'future', 'game', 'garden', 'geography', 'get', 'girl', 'girlfriend', 'give', 'glass', 'go', 'good', 'goodbye', 'grandfather', 'grandmother', 'grandparent', 'great', 'green', 'grey', 'group', 'grow', 'guess', 'guitar', 'gym', 'hair', 'half', 'hand', 'happen', 'happy', 'hard', 'hat', 'hate', 'have', 'have to', 'he', 'head', 'health', 'healthy', 'hear', 'hello', 'help', 'her', 'here', 'hey', 'hi', 'high', 'him', 'his', 'history', 'hobby', 'holiday', 'home', 'homework', 'hope', 'horse', 'hospital', 'hot', 'hotel', 'hour', 'house', 'how', 'however', 'hundred', 'hungry', 'husband', 'I', 'ice', 'ice cream', 'idea', 'if', 'imagine', 'important', 'improve', 'in', 'include', 'information', 'interest', 'interested', 'interesting', 'internet', 'interview', 'into', 'introduce', 'island', 'it', 'its', 'January', 'jeans', 'job', 'join', 'journey', 'juice', 'July', 'June', 'just', 'keep', 'key', 'kilometre', 'kind', 'kitchen', 'know', 'land', 'language', 'large', 'last', 'late', 'later', 'laugh', 'learn', 'leave', 'left', 'leg', 'lesson', 'let', 'letter', 'library', 'lie', 'life', 'light', 'like', 'line', 'lion', 'list', 'listen', 'little', 'live', 'local', 'long', 'look', 'lose', 'lot', 'love', 'lunch', 'machine', 'magazine', 'main', 'make', 'man', 'many', 'map', 'March', 'market', 'married', 'match', 'May', 'maybe', 'me', 'meal', 'mean', 'meaning', 'meat', 'meet', 'meeting', 'member', 'menu', 'message', 'metre', 'midnight', 'mile', 'milk', 'million', 'minute', 'miss', 'mistake', 'model', 'modern', 'moment', 'Monday', 'money', 'month', 'more', 'morning', 'most', 'mother', 'mountain', 'mouse', 'mouth', 'move', 'movie', 'much', 'mum', 'museum', 'music', 'must', 'my', 'name', 'natural', 'near', 'need', 'negative', 'neighbour', 'never', 'new', 'news', 'newspaper', 'next', 'next to', 'nice', 'night', 'nine', 'nineteen', 'ninety', 'no', 'no one', 'nobody', 'north', 'nose', 'not', 'note', 'nothing', 'November', 'now', 'number', 'nurse', 'object', "o'clock", 'October', 'of', 'off', 'office', 'often', 'oh', 'OK', 'old', 'on', 'once', 'one', 'onion', 'online', 'only', 'open', 'opinion', 'opposite', 'or', 'orange', 'order', 'other', 'our', 'out', 'outside', 'over', 'own', 'page', 'paint', 'painting', 'pair', 'paper', 'paragraph', 'parent', 'park', 'part', 'partner', 'party', 'passport', 'past', 'pay', 'pen', 'pencil', 'people', 'pepper', 'perfect', 'period', 'person', 'personal', 'phone', 'photo', 'photograph', 'phrase', 'piano', 'picture', 'piece', 'pig', 'pink', 'place', 'plan', 'plane', 'plant', 'play', 'player', 'please', 'point', 'police', 'policeman', 'pool', 'poor', 'popular', 'positive', 'possible', 'post', 'potato', 'pound', 'practice', 'practise', 'prefer', 'prepare', 'present', 'pretty', 'price', 'probably', 'problem', 'product', 'programme', 'project', 'purple', 'put', 'quarter', 'question', 'quick', 'quickly', 'quiet', 'quite', 'radio', 'rain', 'read', 'reader', 'reading', 'ready', 'real', 'really', 'reason', 'red', 'relax', 'remember', 'repeat', 'report', 'restaurant', 'result', 'return', 'rice', 'rich', 'ride', 'right', 'river', 'road', 'room', 'routine', 'rule', 'run', 'sad', 'salad', 'salt', 'same', 'sandwich', 'Saturday', 'say', 'school', 'science', 'scientist', 'sea', 'second', 'section', 'see', 'sell', 'send', 'sentence', 'September', 'seven', 'seventeen', 'seventy', 'share', 'she', 'sheep', 'shirt', 'shoe', 'shop', 'shopping', 'short', 'should', 'show', 'shower', 'sick', 'similar', 'sing', 'singer', 'sister', 'sit', 'situation', 'six', 'sixteen', 'sixty', 'skill', 'skirt', 'sleep', 'slow', 'small', 'snake', 'snow', 'so', 'some', 'somebody', 'someone', 'something', 'sometimes', 'son', 'song', 'soon', 'sorry', 'sound', 'soup', 'south', 'space', 'speak', 'special', 'spell', 'spelling', 'spend', 'sport', 'spring', 'stand', 'star', 'start', 'statement', 'station', 'stay', 'still', 'stop', 'story', 'street', 'strong', 'student', 'study', 'style', 'subject', 'success', 'sugar', 'summer', 'sun', 'Sunday', 'supermarket', 'sure', 'sweater', 'swim', 'swimming', 'table', 'take', 'talk', 'tall', 'taxi', 'tea', 'teach', 'teacher', 'team', 'teenager', 'telephone', 'television', 'tell', 'ten', 'tennis', 'terrible', 'test', 'text', 'than', 'thank', 'thanks', 'that', 'the', 'theatre', 'their', 'them', 'then', 'there', 'they', 'thing', 'think', 'third', 'thirsty', 'thirteen', 'thirty', 'this', 'thousand', 'three', 'through', 'Thursday', 'ticket', 'time', 'tired', 'title', 'to', 'today', 'together', 'toilet', 'tomato', 'tomorrow', 'tonight', 'too', 'tooth', 'topic', 'tourist', 'town', 'traffic', 'train', 'travel', 'tree', 'trip', 'trousers', 'true', 'try', 'T-shirt', 'Tuesday', 'turn', 'TV', 'twelve', 'twenty', 'twice', 'two', 'type', 'umbrella', 'uncle', 'under', 'understand', 'university', 'until', 'up', 'upstairs', 'us', 'use', 'useful', 'usually', 'vacation', 'vegetable', 'very', 'video', 'village', 'visit', 'visitor', 'wait', 'waiter', 'wake', 'walk', 'wall', 'want', 'warm', 'wash', 'watch', 'water', 'way', 'we', 'wear', 'weather', 'website', 'Wednesday', 'week', 'weekend', 'welcome', 'well', 'west', 'what', 'when', 'where', 'which', 'white', 'who', 'why', 'wife', 'will', 'win', 'window', 'wine', 'winter', 'with', 'without', 'woman', 'wonderful', 'word', 'work', 'worker', 'world', 'worry', 'would', 'write', 'writer', 'writing', 'wrong', 'year', 'yellow', 'yes', 'yesterday', 'you', 'young', 'your', 'yourself'];
         const ttsVoices = ['Zephyr', 'Puck', 'Charon', 'Kore', 'Fenrir', 'Leda', 'Orus', 'Aoede', 'Callirrhoe', 'Autonoe', 'Enceladus', 'Iapetus', 'Umbriel', 'Algieba', 'Despina', 'Erinome', 'Algenib', 'Rasalgethi', 'Laomedeia', 'Achernar', 'Alnilam', 'Schedar', 'Gacrux', 'Pulcherrima', 'Achird', 'Zubenelgenubi', 'Vindemiatrix', 'Sadachbia', 'Sadaltager', 'Sulafat'];
         const repetitionIntervals = { 1: 5, 2: 15, 3: 20 };
 
         const allDOMElements = {
+            entrySection: document.getElementById('entry-section'),
+            googleSigninSection: document.getElementById('google-signin-section'),
+            authorizeButton: document.getElementById('authorize_button'),
+            signOutBtn: document.getElementById('sign-out-btn'),
+            userInfo: document.getElementById('user-info'),
             apiKeySection: document.getElementById('api-key-section'),
             apiKeyInput: document.getElementById('api-key-input'),
             saveApiKeyBtn: document.getElementById('save-api-key-btn'),
@@ -217,10 +257,14 @@
                 console.error("Web Audio API is not supported in this browser");
                 showModal("متصفحك لا يدعم تشغيل الصوتيات، قد لا تعمل بعض الميزات.");
             }
-
-            loadState();
-            updateProgress();
+            
             setupEventListeners();
+            
+            // Load Google API scripts
+            window.onload = () => {
+                gapi.load('client', gapiLoaded);
+                gisInited = true;
+            };
         }
 
         function setupEventListeners() {
@@ -232,6 +276,9 @@
             allDOMElements.navHistory.addEventListener('click', () => showTab('history'));
             allDOMElements.navLearned.addEventListener('click', () => showTab('in-progress'));
             allDOMElements.navBasket.addEventListener('click', () => showTab('basket'));
+            allDOMElements.authorizeButton.addEventListener('click', handleAuthClick);
+            allDOMElements.signOutBtn.addEventListener('click', handleSignoutClick);
+
 
             const lessonArea = allDOMElements.lessonScreen;
             lessonArea.addEventListener('mousedown', () => { isDragging = false; });
@@ -242,25 +289,40 @@
             lessonArea.addEventListener('touchend', handleInteractionEnd);
         }
 
-        function loadState() {
-            apiKey = localStorage.getItem('geminiApiKey') || '';
-            wordsInProgress = JSON.parse(localStorage.getItem('wordsInProgress')) || [];
-            masteredWords = JSON.parse(localStorage.getItem('masteredWords')) || [];
-            learningBasket = JSON.parse(localStorage.getItem('learningBasket')) || [];
-            lessonHistory = JSON.parse(localStorage.getItem('lessonHistory')) || [];
+        function loadState(dataFromDrive = null) {
+            if (dataFromDrive) {
+                // Load from Google Drive data
+                wordsInProgress = dataFromDrive.wordsInProgress || [];
+                masteredWords = dataFromDrive.masteredWords || [];
+                learningBasket = dataFromDrive.learningBasket || [];
+                lessonHistory = dataFromDrive.lessonHistory || [];
+            } else {
+                // Fallback to localStorage
+                apiKey = localStorage.getItem('geminiApiKey') || '';
+                wordsInProgress = JSON.parse(localStorage.getItem('wordsInProgress')) || [];
+                masteredWords = JSON.parse(localStorage.getItem('masteredWords')) || [];
+                learningBasket = JSON.parse(localStorage.getItem('learningBasket')) || [];
+                lessonHistory = JSON.parse(localStorage.getItem('lessonHistory')) || [];
+            }
 
             if (apiKey) {
                 allDOMElements.apiKeyInput.value = apiKey;
-                allDOMElements.apiKeySection.classList.add('hidden');
+                allDOMElements.entrySection.classList.add('hidden');
                 allDOMElements.mainContent.classList.remove('hidden');
             }
+            updateProgress();
         }
 
         function saveState() {
-            localStorage.setItem('wordsInProgress', JSON.stringify(wordsInProgress));
-            localStorage.setItem('masteredWords', JSON.stringify(masteredWords));
-            localStorage.setItem('learningBasket', JSON.stringify(learningBasket));
-            localStorage.setItem('lessonHistory', JSON.stringify(lessonHistory));
+            if (isGoogleLoggedIn) {
+                saveStateToDrive();
+            } else {
+                // Fallback to localStorage if not logged in
+                localStorage.setItem('wordsInProgress', JSON.stringify(wordsInProgress));
+                localStorage.setItem('masteredWords', JSON.stringify(masteredWords));
+                localStorage.setItem('learningBasket', JSON.stringify(learningBasket));
+                localStorage.setItem('lessonHistory', JSON.stringify(lessonHistory));
+            }
         }
 
         function updateProgress() {
@@ -364,7 +426,7 @@
 
         async function generateLesson(newWords, repetitionWords, rewrite = false, isRevision = false, storyWordCount = 100, customInstructions = '') {
             if (!apiKey) {
-                showModal('الرجاء حفظ مفتاح Gemini API أولاً.');
+                showModal('الرجاء حفظ مفتاح Gemini API أولاً لتتمكن من إنشاء الدروس.');
                 return;
             }
             isLessonActive = false;
@@ -1179,7 +1241,7 @@
             if (key) {
                 apiKey = key;
                 localStorage.setItem('geminiApiKey', key);
-                allDOMElements.apiKeySection.classList.add('hidden');
+                allDOMElements.entrySection.classList.add('hidden');
                 allDOMElements.mainContent.classList.remove('hidden');
             } else {
                 showModal('الرجاء إدخال مفتاح API صحيح.');
@@ -1187,17 +1249,151 @@
         }
         
         function handleResetProgress() {
-            if (window.confirm('هل أنت متأكد أنك تريد إعادة تعيين كل تقدمك؟ سيتم حذف جميع الكلمات والدروس المحفوظة.')) {
+            const resetConfirmed = window.confirm('هل أنت متأكد أنك تريد إعادة تعيين كل تقدمك؟ سيتم حذف جميع الكلمات والدروس المحفوظة.');
+            if (resetConfirmed) {
                 wordsInProgress = [];
                 masteredWords = [];
                 learningBasket = [];
                 lessonHistory = [];
                 isLessonActive = false;
-                saveState();
+                
+                // This will either save an empty state to Drive or clear localStorage
+                saveState(); 
+                
                 updateProgress();
                 showTab('home');
             }
         }
+
+        // --- START: Google Drive Integration Functions ---
+
+        function gapiLoaded() {
+            gapi.load('client', initializeGapiClient);
+        }
+
+        async function initializeGapiClient() {
+            await gapi.client.init({
+                // API KEY is not needed for OAuth2 flow
+                // discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
+            });
+            gapiInited = true;
+        }
+
+        function handleAuthClick() {
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: CLIENT_ID,
+                scope: SCOPES,
+                callback: async (resp) => {
+                    if (resp.error !== undefined) {
+                        throw (resp);
+                    }
+                    isGoogleLoggedIn = true;
+                    document.getElementById('entry-section').classList.add('hidden');
+                    document.getElementById('main-content').classList.remove('hidden');
+                    document.getElementById('sign-out-btn').classList.remove('hidden');
+                    
+                    // Load user data from Drive
+                    await loadStateFromDrive();
+                },
+            });
+            
+            // This prevents the redirect_uri error by using the popup flow
+            tokenClient.requestAccessToken({prompt: 'consent'});
+        }
+
+        function handleSignoutClick() {
+            const token = gapi.client.getToken();
+            if (token !== null) {
+                google.accounts.oauth2.revoke(token.access_token, () => {
+                    gapi.client.setToken('');
+                    isGoogleLoggedIn = false;
+                    driveFileId = null;
+                    document.getElementById('entry-section').classList.remove('hidden');
+                    document.getElementById('main-content').classList.add('hidden');
+                    document.getElementById('sign-out-btn').classList.add('hidden');
+                    // Reset to initial state
+                    loadState(); 
+                });
+            }
+        }
+
+        async function loadStateFromDrive() {
+            try {
+                await gapi.client.load('https://www.googleapis.com/discovery/v1/apis/drive/v3/rest');
+                
+                // 1. Find the data file
+                const response = await gapi.client.drive.files.list({
+                    q: `name='${DATA_FILE_NAME}' and 'appDataFolder' in parents`,
+                    spaces: 'appDataFolder',
+                    fields: 'files(id, name)'
+                });
+
+                if (response.result.files && response.result.files.length > 0) {
+                    driveFileId = response.result.files[0].id;
+                    // 2. If file exists, get its content
+                    const fileContentResponse = await gapi.client.drive.files.get({
+                        fileId: driveFileId,
+                        alt: 'media'
+                    });
+                    const data = JSON.parse(fileContentResponse.body);
+                    loadState(data); // Load data into the app
+                } else {
+                    // 3. If file doesn't exist, load default empty state
+                    loadState();
+                }
+            } catch (err) {
+                console.error("Error loading data from Drive:", err);
+                showModal("لم نتمكن من تحميل بياناتك من Google Drive. سنستخدم البيانات المحلية.");
+                loadState(); // Fallback to local
+            }
+        }
+
+        async function saveStateToDrive() {
+            if (!isGoogleLoggedIn) return;
+
+            const appState = {
+                wordsInProgress,
+                masteredWords,
+                learningBasket,
+                lessonHistory
+            };
+            const fileContent = JSON.stringify(appState);
+            const blob = new Blob([fileContent], { type: 'application/json' });
+
+            const metadata = {
+                'name': DATA_FILE_NAME,
+                'mimeType': 'application/json',
+            };
+            
+            if (driveFileId) {
+                // Update existing file
+                const form = new FormData();
+                form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+                form.append('file', blob);
+                
+                await fetch(`https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=multipart`, {
+                    method: 'PATCH',
+                    headers: new Headers({ 'Authorization': `Bearer ${gapi.client.getToken().access_token}` }),
+                    body: form
+                });
+            } else {
+                // Create new file
+                metadata.parents = ['appDataFolder'];
+                const form = new FormData();
+                form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+                form.append('file', blob);
+
+                const createResponse = await fetch(`https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`, {
+                    method: 'POST',
+                    headers: new Headers({ 'Authorization': `Bearer ${gapi.client.getToken().access_token}` }),
+                    body: form
+                });
+                const result = await createResponse.json();
+                driveFileId = result.id;
+            }
+        }
+        // --- END: Google Drive Integration Functions ---
+
 
         initialize();
     </script>
