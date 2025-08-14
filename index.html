@@ -183,12 +183,12 @@
     <script>
         // --- Google Drive Integration START ---
         const CLIENT_ID = '484856738377-c2ng08gfa9sstobj8ilji7vduk47qa3p.apps.googleusercontent.com';
-        const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+        const SCOPES = 'https://www.googleapis.com/auth/drive.appdata';
         
         let tokenClient;
         let gapiInited = false;
         let gisInited = false;
-        let driveFileId = null;
+        let driveFileId = localStorage.getItem('languageStoryFileId') || null;
         let isGoogleLoggedIn = false;
 
         function gapiLoaded() {
@@ -203,7 +203,7 @@
 
         function gisLoaded() {
             tokenClient = google.accounts.oauth2.initTokenClient({
-                client_id: CLIENT_ID,
+                client_id: CLIENT_ID.trim(), // Ensure no whitespace
                 scope: SCOPES,
                 callback: gapiTokenCallback,
             });
@@ -212,7 +212,6 @@
         }
         
         function checkAuthInit() {
-            // This ensures both libraries are loaded before enabling the sign-in button
             if (gapiInited && gisInited) {
                 document.getElementById('signin-btn').disabled = false;
             }
@@ -245,8 +244,9 @@
                     gapi.client.setToken('');
                     isGoogleLoggedIn = false;
                     driveFileId = null;
+                    localStorage.removeItem('languageStoryFileId');
                     updateUiForLoginStatus();
-                    loadLocalState(); // Fallback to local state after signing out
+                    loadState({ wordsInProgress: [], masteredWords: [], learningBasket: [], lessonHistory: [] }); // Reset state
                     showModal('تم تسجيل الخروج بنجاح.');
                 });
             }
@@ -303,10 +303,7 @@
                 showModal("متصفحك لا يدعم تشغيل الصوتيات، قد لا تعمل بعض الميزات.");
             }
             
-            // Initially, disable the sign-in button until libraries are loaded
             allDOMElements.signinBtn.disabled = true;
-
-            loadLocalState(); // Load from local storage by default
             updateUiForLoginStatus();
             setupEventListeners();
         }
@@ -348,9 +345,8 @@
             }
         }
         
-        // Overarching state loader
         function loadState(data) {
-            apiKey = localStorage.getItem('geminiApiKey') || ''; // API key is always local
+            apiKey = localStorage.getItem('geminiApiKey') || '';
             wordsInProgress = data.wordsInProgress || [];
             masteredWords = data.masteredWords || [];
             learningBasket = data.learningBasket || [];
@@ -364,105 +360,110 @@
             updateUiForLoginStatus();
         }
 
-        // Overarching state saver
         function saveState() {
-            if (isGoogleLoggedIn) {
-                saveStateToDrive();
-            } else {
-                saveLocalState();
-            }
+             return saveStateToDrive();
         }
         
-        function loadLocalState() {
-            const localData = {
-                wordsInProgress: JSON.parse(localStorage.getItem('wordsInProgress')) || [],
-                masteredWords: JSON.parse(localStorage.getItem('masteredWords')) || [],
-                learningBasket: JSON.parse(localStorage.getItem('learningBasket')) || [],
-                lessonHistory: JSON.parse(localStorage.getItem('lessonHistory')) || [],
-            };
-            loadState(localData);
-        }
-
-        function saveLocalState() {
-            localStorage.setItem('wordsInProgress', JSON.stringify(wordsInProgress));
-            localStorage.setItem('masteredWords', JSON.stringify(masteredWords));
-            localStorage.setItem('learningBasket', JSON.stringify(learningBasket));
-            localStorage.setItem('lessonHistory', JSON.stringify(lessonHistory));
-        }
-
         async function loadStateFromDrive() {
             if (!gapiInited) await initializeGapiClient();
             await gapi.client.load('https://www.googleapis.com/discovery/v1/apis/drive/v3/rest');
 
             try {
+                if (driveFileId) {
+                    const file = await gapi.client.drive.files.get({ fileId: driveFileId, alt: 'media' });
+                    const raw = file.result ?? file.body ?? '{}';
+                    const data = typeof raw === 'string' ? JSON.parse(raw) : raw;
+                    loadState(data);
+                    showModal('تم تحميل تقدمك من Google Drive بنجاح.');
+                    return;
+                }
+
                 const list = await gapi.client.drive.files.list({
-                    q: "name='language_story_data.json' and 'root' in parents and trashed=false",
+                    spaces: 'appDataFolder',
+                    q: "name='language_story_data.json' and trashed=false",
                     fields: 'files(id,name)'
                 });
 
                 if (list.result.files?.length) {
                     driveFileId = list.result.files[0].id;
+                    localStorage.setItem('languageStoryFileId', driveFileId);
                     const file = await gapi.client.drive.files.get({ fileId: driveFileId, alt: 'media' });
-                    const data = JSON.parse(file.body);
+                    const raw = file.result ?? file.body ?? '{}';
+                    const data = typeof raw === 'string' ? JSON.parse(raw) : raw;
                     loadState(data);
                     showModal('تم تحميل تقدمك من Google Drive بنجاح.');
                 } else {
-                    driveFileId = null;
-                    loadLocalState(); // No file found, start with local state
+                    loadState({ wordsInProgress: [], masteredWords: [], learningBasket: [], lessonHistory: [] });
                 }
             } catch (e) {
                 console.error('Drive load error', e);
-                if (e.status === 401) {
-                    tokenClient.requestAccessToken({ prompt: '' }); // Refresh token silently
-                } else {
-                    showModal('حدث خطأ أثناء تحميل البيانات من Google Drive. سنستخدم الحفظ المحلي.');
-                    loadLocalState();
-                }
+                if (e.status === 401) tokenClient.requestAccessToken({ prompt: '' });
+                showModal('تعذر التحميل من Drive الآن.');
             }
         }
 
         async function saveStateToDrive() {
-            if (!isGoogleLoggedIn || !gapi.client.getToken()) {
-                console.warn('No GAPI token; saving locally as a fallback.');
-                saveLocalState();
+            const tokenObj = gapi.client.getToken();
+            if (!isGoogleLoggedIn || !tokenObj?.access_token) {
+                showModal('يرجى تسجيل الدخول إلى Google أولاً.');
                 return;
             }
 
             const appState = { wordsInProgress, masteredWords, learningBasket, lessonHistory };
-            const blob = new Blob([JSON.stringify(appState)], { type: 'application/json' });
-            const form = new FormData();
+
+            const boundary = '-------314159265358979323846';
+            const delimiter = `\r\n--${boundary}\r\n`;
+            const closeDelim = `\r\n--${boundary}--`;
+
+            const headers = {
+                'Authorization': `Bearer ${tokenObj.access_token}`,
+                'Content-Type': `multipart/related; boundary=${boundary}`
+            };
+
+            const metadataCreate = {
+                name: 'language_story_data.json',
+                mimeType: 'application/json',
+                parents: ['appDataFolder']
+            };
+
+            const metaForCreate = JSON.stringify(metadataCreate);
+            const metaForUpdate = JSON.stringify({});
+            const dataPart = JSON.stringify(appState);
+
+            const bodyCreate =
+                delimiter + 'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
+                metaForCreate +
+                delimiter + 'Content-Type: application/json\r\n\r\n' +
+                dataPart + closeDelim;
+
+            const bodyUpdate =
+                delimiter + 'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
+                metaForUpdate +
+                delimiter + 'Content-Type: application/json\r\n\r\n' +
+                dataPart + closeDelim;
 
             try {
-                const headers = new Headers();
-                headers.append('Authorization', `Bearer ${gapi.client.getToken().access_token}`);
-                
-                let url, method;
+                let res;
                 if (driveFileId) {
-                    // Update existing file
-                    url = `https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=multipart`;
-                    method = 'PATCH';
-                    form.append('metadata', new Blob([JSON.stringify({})], { type: 'application/json' }));
+                    res = await fetch(
+                        `https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=multipart`,
+                        { method: 'PATCH', headers, body: bodyUpdate }
+                    );
+                    if (!res.ok) throw new Error(await res.text());
                 } else {
-                    // Create new file
-                    url = `https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`;
-                    method = 'POST';
-                    const metadata = { name: 'language_story_data.json', mimeType: 'application/json', parents: ['root'] };
-                    form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-                }
-                form.append('file', blob);
-
-                const res = await fetch(url, { method, headers, body: form });
-                if (!res.ok) throw new Error(await res.text());
-                
-                if (method === 'POST') {
+                    res = await fetch(
+                        'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',
+                        { method: 'POST', headers, body: bodyCreate }
+                    );
+                    if (!res.ok) throw new Error(await res.text());
                     const created = await res.json();
                     driveFileId = created.id;
+                    localStorage.setItem('languageStoryFileId', driveFileId);
                 }
-                console.log('State saved to Drive successfully.');
+                console.log('Saved to Drive.');
             } catch (e) {
                 console.error('Drive save error', e);
-                saveLocalState();
-                showModal('تعذر الحفظ في Drive، سيتم الحفظ محلياً مؤقتاً.');
+                showModal('تعذّر الحفظ في Drive الآن.');
             }
         }
 
