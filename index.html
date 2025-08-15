@@ -195,7 +195,7 @@
         </main>
 
         <div id="selection-popup" class="hidden absolute bg-white border rounded-lg shadow-xl p-1 flex gap-1 z-50 dark:bg-slate-700 dark:border-slate-600">
-            <button id="popup-translate" title="ترجمة" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-600 rounded-md">🇹🇷</button>
+            <button id="popup-translate" title="ترجمة" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-600 rounded-md">🌐</button>
             <button id="popup-speak" title="نطق" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-600 rounded-md">🔊</button>
             <button id="popup-phonetics" title="كتابة صوتية" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-600 rounded-md">🗣️</button>
             <button id="popup-save" title="حفظ للسلة" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-600 rounded-md">💾</button>
@@ -453,23 +453,27 @@
 
 
         function updateUiForLoginStatus() {
+            // لوحة البيانات: تظهر دائمًا (تفيد حتى بدون جوجل)
+            const dash = document.getElementById('dashboard');
+            dash.classList.remove('hidden'); dash.classList.add('flex');
+
+            // أزرار جوجل
             if (isGoogleLoggedIn) {
-                document.getElementById('dashboard').classList.remove('hidden');
-                document.getElementById('dashboard').classList.add('flex');
                 allDOMElements.signinBtn.classList.add('hidden');
                 allDOMElements.signoutBtn.classList.remove('hidden');
-                allDOMElements.apiKeySection.classList.remove('hidden');
-                if (apiKey) {
-                    allDOMElements.mainContent.classList.remove('hidden');
-                }
+                document.getElementById('user-chip').classList.remove('hidden');
             } else {
-                document.getElementById('dashboard').classList.add('hidden');
-                document.getElementById('dashboard').classList.remove('flex');
                 allDOMElements.signinBtn.classList.remove('hidden');
                 allDOMElements.signoutBtn.classList.add('hidden');
-                allDOMElements.apiKeySection.classList.add('hidden');
-                allDOMElements.mainContent.classList.add('hidden');
+                document.getElementById('user-chip').classList.add('hidden');
             }
+
+            // قسم مفتاح الـAPI: يظهر دائمًا
+            allDOMElements.apiKeySection.classList.remove('hidden');
+
+            // المحتوى الرئيسي يُظهر عند وجود مفتاح API، بغضّ النظر عن جوجل
+            if (apiKey) allDOMElements.mainContent.classList.remove('hidden');
+            else allDOMElements.mainContent.classList.add('hidden');
         }
         
         function loadState(data) {
@@ -512,7 +516,7 @@
                     const raw = file.result ?? file.body ?? '{}';
                     const data = typeof raw === 'string' ? JSON.parse(raw) : raw;
                     loadState(data);
-                    showModal('تم تحميل تقدمك من Google Drive بنجاح.');
+                    
                     hideGlobalLoader();
                     return;
                 }
@@ -530,7 +534,6 @@
                     const raw = file.result ?? file.body ?? '{}';
                     const data = typeof raw === 'string' ? JSON.parse(raw) : raw;
                     loadState(data);
-                    showModal('تم تحميل تقدمك من Google Drive بنجاح.');
                 } else {
                     loadState({ wordsInProgress: [], masteredWords: [], learningBasket: [], lessonHistory: [] });
                 }
@@ -799,10 +802,12 @@
                     repetitionWords.forEach(repWord => {
                         const idx = wordsInProgress.findIndex(item => item.word === repWord.word);
                         if (idx > -1) {
-                            wordsInProgress[idx].level = Math.min(4, (wordsInProgress[idx].level||1)+1);
-                            wordsInProgress[idx].lessonCounter = 0;
-                            if (wordsInProgress[idx].level > 3) {
-                                masteredWords.push(wordsInProgress[idx].word);
+                            const it = wordsInProgress[idx];
+                            it.level = Math.min(4, (it.level||1)+1);
+                            it.lessonCounter = 0;
+                            it.reviewCount = (it.reviewCount || 0) + 1;
+                            if (it.level > 3) {
+                                masteredWords.push(it.word);
                                 wordsInProgress.splice(idx, 1);
                             }
                         }
@@ -926,8 +931,8 @@
             document.getElementById('rewrite-btn').addEventListener('click', () => {
                 const wordCount = document.getElementById('word-count-lesson').value;
                 const customInstructions = document.getElementById('custom-prompt-lesson').value;
-                const newW = data.new_words.filter(w => !w.word.includes(' ')).map(w => w.word);
-                const repW = []; // Simplified for rewrite
+                const newW = []; 
+                const repW = (data.learnedWords || []).map(w => ({ word: w }));
                 generateLesson(newW, repW, true, isRevision, wordCount, customInstructions);
             });
             document.getElementById('next-lesson-btn').addEventListener('click', () => {
@@ -1388,7 +1393,7 @@
                     ${[...wordsInProgress].sort((a,b) => a.word.localeCompare(b.word)).map(item => `
                         <div class="p-3 border rounded-md text-center cursor-pointer hover:bg-sky-100 dark:border-slate-700 dark:hover:bg-slate-700 flex flex-col justify-between" onclick="handleInProgressWordClick('${item.word}')">
                             <span class="font-english font-bold">${item.word}</span>
-                            <span class="text-xs text-slate-500 mt-1">المستوى ${item.level}</span>
+                            <span class="text-xs text-slate-500 mt-1">المستوى ${item.level} • المراجعات ${item.reviewCount||0}</span>
                         </div>
                     `).join('')}
                    </div>`;
