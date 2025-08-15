@@ -100,62 +100,72 @@
         .sentence-chunk:hover .sent-trans-btn { opacity: 1; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800">
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100">
+    <button id="toggle-dark" class="absolute top-4 left-4 px-3 py-1 border rounded dark:border-slate-600">🌙</button>
 
     <div id="app" class="container mx-auto p-4 md:p-8 max-w-4xl">
         
         <header class="text-center mb-8">
             <h1 class="text-4xl font-bold text-sky-600 mb-2">قصتي اللغوية</h1>
-            <p class="text-lg text-slate-600">تعلم مفردات الإنجليزية من خلال قصص يصنعها الذكاء الاصطناعي</p>
+            <p class="text-lg text-slate-600 dark:text-slate-300">تعلم مفردات الإنجليزية من خلال قصص يصنعها الذكاء الاصطناعي</p>
              <div id="auth-container" class="mt-4 flex items-center justify-center">
                 <button id="signin-btn" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition">تسجيل الدخول مع Google لحفظ التقدم</button>
                 <button id="signout-btn" class="hidden bg-red-500 text-white px-6 py-2 rounded-md hover:bg-red-600 transition">تسجيل الخروج</button>
-                <span id="user-chip" class="hidden inline-flex items-center gap-2 bg-white border rounded-full px-3 py-1 ml-2">
+                <span id="user-chip" class="hidden inline-flex items-center gap-2 bg-white border rounded-full px-3 py-1 ml-2 dark:bg-slate-800 dark:border-slate-700">
                     <img id="user-pic" src="" alt="" class="w-6 h-6 rounded-full">
                     <span id="user-name" class="text-sm"></span>
                 </span>
             </div>
         </header>
 
-        <div id="api-key-section" class="hidden mb-6 p-4 bg-white rounded-lg shadow-md">
+        <div id="dashboard" class="hidden mb-6 p-4 bg-white rounded-lg shadow-md flex-wrap gap-2 justify-center dark:bg-slate-800 dark:border dark:border-slate-700">
+            <button id="btn-reset" class="px-4 py-2 bg-red-500 text-white rounded">إعادة ضبط كامل</button>
+            <button id="btn-export" class="px-4 py-2 bg-sky-600 text-white rounded">تصدير البيانات (JSON)</button>
+            <label class="px-4 py-2 bg-amber-500 text-white rounded cursor-pointer">
+              استيراد بيانات
+              <input type="file" id="import-file" accept="application/json" class="hidden">
+            </label>
+        </div>
+
+        <div id="api-key-section" class="hidden mb-6 p-4 bg-white rounded-lg shadow-md dark:bg-slate-800 dark:border dark:border-slate-700">
             <div class="flex items-center gap-3 mb-3">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-amber-500"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4c0-1.1.9-2 2-2h8a2 2 0 0 1 2 2v5Z"/><path d="M18 9h2a2 2 0 0 1 2 2v10l-4-4H8a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h2"/><path d="M22 12h-2"/><path d="M18 12h-2"/></svg>
                 <h2 class="text-xl font-bold">مفتاح Gemini API</h2>
             </div>
-            <p class="text-slate-600 mb-3 text-sm">لاستخدام التطبيق، يرجى إدخال مفتاح Gemini API الخاص بك. يمكنك الحصول عليه من <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-sky-600 hover:underline">Google AI Studio</a>.</p>
+            <p class="text-slate-600 mb-3 text-sm dark:text-slate-300">لاستخدام التطبيق، يرجى إدخال مفتاح Gemini API الخاص بك. يمكنك الحصول عليه من <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-sky-600 hover:underline">Google AI Studio</a>.</p>
             <div class="flex flex-col sm:flex-row gap-2">
-                <input type="password" id="api-key-input" class="flex-grow p-2 border rounded-md font-english" placeholder="أدخل مفتاحك هنا...">
+                <input type="password" id="api-key-input" class="flex-grow p-2 border rounded-md font-english dark:bg-slate-700 dark:border-slate-600">
                 <button id="save-api-key-btn" class="bg-sky-600 text-white px-6 py-2 rounded-md hover:bg-sky-700 transition">حفظ والبدء</button>
             </div>
         </div>
 
         <main id="main-content" class="hidden">
             
-            <div class="mb-6 flex justify-center border-b flex-wrap">
+            <div class="mb-6 flex justify-center border-b flex-wrap dark:border-slate-700">
                 <button id="nav-home" class="px-4 py-3 text-lg font-bold border-b-4 border-sky-600 text-sky-600">الرئيسية</button>
                 <button id="nav-history" class="px-4 py-3 text-lg font-bold border-b-4 border-transparent text-slate-500 hover:text-sky-600">سجل الدروس</button>
                 <button id="nav-in-progress" class="px-4 py-3 text-lg font-bold border-b-4 border-transparent text-slate-500 hover:text-sky-600">كلمات قيد التعلم</button>
                 <button id="nav-basket" class="px-4 py-3 text-lg font-bold border-b-4 border-transparent text-slate-500 hover:text-sky-600">سلة المراجعة</button>
             </div>
             
-            <div id="stats-section" class="mb-6 p-4 bg-white rounded-lg shadow-md flex flex-wrap justify-around text-center">
-                <div><p class="text-slate-500">إجمالي الكلمات</p><p id="total-words" class="text-2xl font-bold text-sky-600 font-english">0</p></div>
-                <div><p class="text-slate-500">كلمات تعلمتها</p><p id="learned-words" class="text-2xl font-bold text-green-600 font-english">0</p></div>
-                <div><p class="text-slate-500">الكلمات المتبقية</p><p id="remaining-words" class="text-2xl font-bold text-amber-600 font-english">0</p></div>
+            <div id="stats-section" class="mb-6 p-4 bg-white rounded-lg shadow-md flex flex-wrap justify-around text-center dark:bg-slate-800 dark:border dark:border-slate-700">
+                <div><p class="text-slate-500 dark:text-slate-400">إجمالي الكلمات</p><p id="total-words" class="text-2xl font-bold text-sky-600 font-english">0</p></div>
+                <div><p class="text-slate-500 dark:text-slate-400">كلمات تعلمتها</p><p id="learned-words" class="text-2xl font-bold text-green-600 font-english">0</p></div>
+                <div><p class="text-slate-500 dark:text-slate-400">الكلمات المتبقية</p><p id="remaining-words" class="text-2xl font-bold text-amber-600 font-english">0</p></div>
             </div>
 
-            <div id="home-screen" class="text-center p-8 bg-white rounded-lg shadow-md">
+            <div id="home-screen" class="text-center p-8 bg-white rounded-lg shadow-md dark:bg-slate-800 dark:border dark:border-slate-700">
                 <h2 class="text-2xl font-bold mb-4">هل أنت مستعد لدرس جديد؟</h2>
-                <p class="text-slate-600 mb-6">حدد عدد الكلمات وأضف تعليمات خاصة للقصة إذا أردت.</p>
+                <p class="text-slate-600 mb-6 dark:text-slate-300">حدد عدد الكلمات وأضف تعليمات خاصة للقصة إذا أردت.</p>
                 
                 <div class="max-w-md mx-auto space-y-4 mb-6 text-right">
                     <div>
-                        <label for="word-count-home" class="block text-sm font-medium text-slate-700">إجمالي كلمات القصة (تقريبيًا 50-500)</label>
-                        <input type="number" id="word-count-home" value="100" min="50" max="500" class="mt-1 block w-full p-2 border border-slate-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500">
+                        <label for="word-count-home" class="block text-sm font-medium text-slate-700 dark:text-slate-200">إجمالي كلمات القصة (تقريبيًا 50-500)</label>
+                        <input type="number" id="word-count-home" value="100" min="50" max="500" class="mt-1 block w-full p-2 border border-slate-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500 dark:bg-slate-700 dark:border-slate-600">
                     </div>
                     <div>
-                        <label for="custom-prompt-home" class="block text-sm font-medium text-slate-700">اكتب تعليمات للقصة (اختياري)</label>
-                        <textarea id="custom-prompt-home" rows="2" class="mt-1 block w-full p-2 border border-slate-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500" placeholder="مثال: قصة عن حيوانات في حديقة، للأطفال..."></textarea>
+                        <label for="custom-prompt-home" class="block text-sm font-medium text-slate-700 dark:text-slate-200">اكتب تعليمات للقصة (اختياري)</label>
+                        <textarea id="custom-prompt-home" rows="2" class="mt-1 block w-full p-2 border border-slate-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500 dark:bg-slate-700 dark:border-slate-600" placeholder="مثال: قصة عن حيوانات في حديقة، للأطفال..."></textarea>
                     </div>
                 </div>
 
@@ -165,31 +175,37 @@
                         أنشئ قصة جديدة
                     </span>
                 </button>
-                <button id="reset-progress-btn" class="mt-4 bg-red-500 text-white px-4 py-2 rounded-md text-sm hover:bg-red-600 transition">إعادة تعيين التقدم</button>
             </div>
 
-            <div id="history-screen" class="hidden p-4 bg-white rounded-lg shadow-md space-y-3">
+            <div id="history-screen" class="hidden p-4 bg-white rounded-lg shadow-md space-y-3 dark:bg-slate-800 dark:border dark:border-slate-700">
                 <h2 class="text-2xl font-bold mb-4 text-center">الدروس السابقة</h2>
                 <div id="history-list" class="space-y-2"></div>
             </div>
 
-            <div id="in-progress-screen" class="hidden p-4 bg-white rounded-lg shadow-md"></div>
+            <div id="in-progress-screen" class="hidden p-4 bg-white rounded-lg shadow-md dark:bg-slate-800 dark:border dark:border-slate-700"></div>
             
             <div id="basket-screen" class="hidden space-y-6"></div>
 
-            <div id="loading-screen" class="hidden text-center p-8 bg-white rounded-lg shadow-md">
+            <div id="loading-screen" class="hidden text-center p-8 bg-white rounded-lg shadow-md dark:bg-slate-800 dark:border dark:border-slate-700">
                 <div class="flex justify-center mb-4"><div class="loader"></div></div>
-                <p class="text-slate-600 text-lg">الذكاء الاصطناعي يكتب قصتك... يرجى الانتظار.</p>
+                <p class="text-slate-600 text-lg dark:text-slate-300">الذكاء الاصطناعي يكتب قصتك... يرجى الانتظار.</p>
             </div>
 
             <div id="lesson-screen" class="hidden space-y-6"></div>
         </main>
 
-        <div id="selection-popup" class="hidden absolute bg-white border rounded-lg shadow-xl p-1 flex gap-1 z-50">
-            <button id="popup-translate" title="ترجمة" class="p-2 hover:bg-slate-100 rounded-md">🇹🇷</button>
-            <button id="popup-speak" title="نطق" class="p-2 hover:bg-slate-100 rounded-md">🔊</button>
-            <button id="popup-phonetics" title="كتابة صوتية" class="p-2 hover:bg-slate-100 rounded-md">🗣️</button>
-            <button id="popup-save" title="حفظ للسلة" class="p-2 hover:bg-slate-100 rounded-md">💾</button>
+        <div id="selection-popup" class="hidden absolute bg-white border rounded-lg shadow-xl p-1 flex gap-1 z-50 dark:bg-slate-700 dark:border-slate-600">
+            <button id="popup-translate" title="ترجمة" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-600 rounded-md">🇹🇷</button>
+            <button id="popup-speak" title="نطق" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-600 rounded-md">🔊</button>
+            <button id="popup-phonetics" title="كتابة صوتية" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-600 rounded-md">🗣️</button>
+            <button id="popup-save" title="حفظ للسلة" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-600 rounded-md">💾</button>
+        </div>
+    </div>
+    
+    <div id="global-loader" class="fixed inset-0 hidden items-center justify-center bg-black/40 z-[2000]">
+        <div class="bg-white p-6 rounded-lg shadow text-center dark:bg-slate-800">
+            <div class="loader mx-auto mb-3"></div>
+            <div id="global-loader-text" class="font-bold">جاري تحميل البيانات…</div>
         </div>
     </div>
 
@@ -295,6 +311,7 @@
         const a1Words = ['a', 'an', 'about', 'above', 'across', 'action', 'activity', 'actor', 'actress', 'add', 'address', 'adult', 'advice', 'afraid', 'after', 'afternoon', 'again', 'age', 'ago', 'agree', 'air', 'airport', 'all', 'also', 'always', 'amazing', 'and', 'angry', 'animal', 'another', 'answer', 'any', 'anyone', 'anything', 'apartment', 'apple', 'April', 'area', 'arm', 'around', 'arrive', 'art', 'article', 'artist', 'as', 'ask', 'at', 'August', 'aunt', 'autumn', 'away', 'baby', 'back', 'bad', 'bag', 'ball', 'banana', 'band', 'bank', 'bath', 'bathroom', 'be', 'beach', 'beautiful', 'because', 'become', 'bed', 'bedroom', 'beer', 'before', 'begin', 'beginning', 'behind', 'believe', 'below', 'best', 'better', 'between', 'bicycle', 'big', 'bike', 'bill', 'bird', 'birthday', 'black', 'blog', 'blonde', 'blue', 'boat', 'body', 'book', 'boot', 'bored', 'boring', 'born', 'both', 'bottle', 'box', 'boy', 'boyfriend', 'bread', 'break', 'breakfast', 'bring', 'brother', 'brown', 'build', 'building', 'bus', 'business', 'busy', 'but', 'butter', 'buy', 'by', 'bye', 'cafe', 'cake', 'call', 'camera', 'can', 'cannot', 'capital', 'car', 'card', 'career', 'carrot', 'carry', 'cat', 'CD', 'cent', 'centre', 'century', 'chair', 'change', 'chart', 'cheap', 'check', 'cheese', 'chicken', 'child', 'chocolate', 'choose', 'cinema', 'city', 'class', 'classroom', 'clean', 'climb', 'clock', 'close', 'clothes', 'club', 'coat', 'coffee', 'cold', 'college', 'colour', 'come', 'common', 'company', 'compare', 'complete', 'computer', 'concert', 'conversation', 'cook', 'cooking', 'cool', 'correct', 'cost', 'could', 'country', 'course', 'cousin', 'cow', 'cream', 'create', 'culture', 'cup', 'customer', 'cut', 'dad', 'dance', 'dancer', 'dancing', 'dangerous', 'dark', 'date', 'daughter', 'day', 'dear', 'December', 'decide', 'delicious', 'describe', 'description', 'design', 'desk', 'detail', 'dialogue', 'dictionary', 'die', 'diet', 'difference', 'different', 'difficult', 'dinner', 'dirty', 'discuss', 'dish', 'do', 'doctor', 'dog', 'dollar', 'door', 'down', 'downstairs', 'draw', 'dress', 'drink', 'drive', 'driver', 'during', 'DVD', 'each', 'ear', 'early', 'east', 'easy', 'eat', 'egg', 'eight', 'eighteen', 'eighty', 'elephant', 'eleven', 'else', 'email', 'end', 'enjoy', 'enough', 'euro', 'even', 'evening', 'event', 'ever', 'every', 'everybody', 'everyone', 'everything', 'exam', 'example', 'excited', 'exciting', 'exercise', 'expensive', 'explain', 'extra', 'eye', 'face', 'fact', 'fall', 'false', 'family', 'famous', 'fantastic', 'far', 'farm', 'farmer', 'fast', 'fat', 'father', 'favourite', 'February', 'feel', 'feeling', 'festival', 'few', 'fifteen', 'fifth', 'fifty', 'fill', 'film', 'final', 'find', 'fine', 'finish', 'fire', 'first', 'fish', 'five', 'flat', 'flight', 'floor', 'flower', 'fly', 'follow', 'food', 'foot', 'football', 'for', 'forget', 'form', 'forty', 'four', 'fourteen', 'fourth', 'free', 'Friday', 'friend', 'friendly', 'from', 'front', 'fruit', 'full', 'fun', 'funny', 'future', 'game', 'garden', 'geography', 'get', 'girl', 'girlfriend', 'give', 'glass', 'go', 'good', 'goodbye', 'grandfather', 'grandmother', 'grandparent', 'great', 'green', 'grey', 'group', 'grow', 'guess', 'guitar', 'gym', 'hair', 'half', 'hand', 'happen', 'happy', 'hard', 'hat', 'hate', 'have', 'have to', 'he', 'head', 'health', 'healthy', 'hear', 'hello', 'help', 'her', 'here', 'hey', 'hi', 'high', 'him', 'his', 'history', 'hobby', 'holiday', 'home', 'homework', 'hope', 'horse', 'hospital', 'hot', 'hotel', 'hour', 'house', 'how', 'however', 'hundred', 'hungry', 'husband', 'I', 'ice', 'ice cream', 'idea', 'if', 'imagine', 'important', 'improve', 'in', 'include', 'information', 'interest', 'interested', 'interesting', 'internet', 'interview', 'into', 'introduce', 'island', 'it', 'its', 'January', 'jeans', 'job', 'join', 'journey', 'juice', 'July', 'June', 'just', 'keep', 'key', 'kilometre', 'kind', 'kitchen', 'know', 'land', 'language', 'large', 'last', 'late', 'later', 'laugh', 'learn', 'leave', 'left', 'leg', 'lesson', 'let', 'letter', 'library', 'lie', 'life', 'light', 'like', 'line', 'lion', 'list', 'listen', 'little', 'live', 'local', 'long', 'look', 'lose', 'lot', 'love', 'lunch', 'machine', 'magazine', 'main', 'make', 'man', 'many', 'map', 'March', 'market', 'married', 'match', 'May', 'maybe', 'me', 'meal', 'mean', 'meaning', 'meat', 'meet', 'meeting', 'member', 'menu', 'message', 'metre', 'midnight', 'mile', 'milk', 'million', 'minute', 'miss', 'mistake', 'model', 'modern', 'moment', 'Monday', 'money', 'month', 'more', 'morning', 'most', 'mother', 'mountain', 'mouse', 'mouth', 'move', 'movie', 'much', 'mum', 'museum', 'music', 'must', 'my', 'name', 'natural', 'near', 'need', 'negative', 'neighbour', 'never', 'new', 'news', 'newspaper', 'next', 'next to', 'nice', 'night', 'nine', 'nineteen', 'ninety', 'no', 'no one', 'nobody', 'north', 'nose', 'not', 'note', 'nothing', 'November', 'now', 'number', 'nurse', 'object', "o'clock", 'October', 'of', 'off', 'office', 'often', 'oh', 'OK', 'old', 'on', 'once', 'one', 'onion', 'online', 'only', 'open', 'opinion', 'opposite', 'or', 'orange', 'order', 'other', 'our', 'out', 'outside', 'over', 'own', 'page', 'paint', 'painting', 'pair', 'paper', 'paragraph', 'parent', 'park', 'part', 'partner', 'party', 'passport', 'past', 'pay', 'pen', 'pencil', 'people', 'pepper', 'perfect', 'period', 'person', 'personal', 'phone', 'photo', 'photograph', 'phrase', 'piano', 'picture', 'piece', 'pig', 'pink', 'place', 'plan', 'plane', 'plant', 'play', 'player', 'please', 'point', 'police', 'policeman', 'pool', 'poor', 'popular', 'positive', 'possible', 'post', 'potato', 'pound', 'practice', 'practise', 'prefer', 'prepare', 'present', 'pretty', 'price', 'probably', 'problem', 'product', 'programme', 'project', 'purple', 'put', 'quarter', 'question', 'quick', 'quickly', 'quiet', 'quite', 'radio', 'rain', 'read', 'reader', 'reading', 'ready', 'real', 'really', 'reason', 'red', 'relax', 'remember', 'repeat', 'report', 'restaurant', 'result', 'return', 'rice', 'rich', 'ride', 'right', 'river', 'road', 'room', 'routine', 'rule', 'run', 'sad', 'salad', 'salt', 'same', 'sandwich', 'Saturday', 'say', 'school', 'science', 'scientist', 'sea', 'second', 'section', 'see', 'sell', 'send', 'sentence', 'September', 'seven', 'seventeen', 'seventy', 'share', 'she', 'sheep', 'shirt', 'shoe', 'shop', 'shopping', 'short', 'should', 'show', 'shower', 'sick', 'similar', 'sing', 'singer', 'sister', 'sit', 'situation', 'six', 'sixteen', 'sixty', 'skill', 'skirt', 'sleep', 'slow', 'small', 'snake', 'snow', 'so', 'some', 'somebody', 'someone', 'something', 'sometimes', 'son', 'song', 'soon', 'sorry', 'sound', 'soup', 'south', 'space', 'speak', 'special', 'spell', 'spelling', 'spend', 'sport', 'spring', 'stand', 'star', 'start', 'statement', 'station', 'stay', 'still', 'stop', 'story', 'street', 'strong', 'student', 'study', 'style', 'subject', 'success', 'sugar', 'summer', 'sun', 'Sunday', 'supermarket', 'sure', 'sweater', 'swim', 'swimming', 'table', 'take', 'talk', 'tall', 'taxi', 'tea', 'teach', 'teacher', 'team', 'teenager', 'telephone', 'television', 'tell', 'ten', 'tennis', 'terrible', 'test', 'text', 'than', 'thank', 'thanks', 'that', 'the', 'theatre', 'their', 'them', 'then', 'there', 'they', 'thing', 'think', 'third', 'thirsty', 'thirteen', 'thirty', 'this', 'thousand', 'three', 'through', 'Thursday', 'ticket', 'time', 'tired', 'title', 'to', 'today', 'together', 'toilet', 'tomato', 'tomorrow', 'tonight', 'too', 'tooth', 'topic', 'tourist', 'town', 'traffic', 'train', 'travel', 'tree', 'trip', 'trousers', 'true', 'try', 'T-shirt', 'Tuesday', 'turn', 'TV', 'twelve', 'twenty', 'twice', 'two', 'type', 'umbrella', 'uncle', 'under', 'understand', 'university', 'until', 'up', 'upstairs', 'us', 'use', 'useful', 'usually', 'vacation', 'vegetable', 'very', 'video', 'village', 'visit', 'visitor', 'wait', 'waiter', 'wake', 'walk', 'wall', 'want', 'warm', 'wash', 'watch', 'water', 'way', 'we', 'wear', 'weather', 'website', 'Wednesday', 'week', 'weekend', 'welcome', 'well', 'west', 'what', 'when', 'where', 'which', 'white', 'who', 'why', 'wife', 'will', 'win', 'window', 'wine', 'winter', 'with', 'without', 'woman', 'wonderful', 'word', 'work', 'worker', 'world', 'worry', 'would', 'write', 'writer', 'writing', 'wrong', 'year', 'yellow', 'yes', 'yesterday', 'you', 'young', 'your', 'yourself'];
         const ttsVoices = ['Zephyr', 'Puck', 'Charon', 'Kore', 'Fenrir', 'Leda', 'Orus', 'Aoede', 'Callirrhoe', 'Autonoe', 'Enceladus', 'Iapetus', 'Umbriel', 'Algieba', 'Despina', 'Erinome', 'Algenib', 'Rasalgethi', 'Laomedeia', 'Achernar', 'Alnilam', 'Schedar', 'Gacrux', 'Pulcherrima', 'Achird', 'Zubenelgenubi', 'Vindemiatrix', 'Sadachbia', 'Sadaltager', 'Sulafat'];
         const repetitionIntervals = { 1: 5, 2: 15, 3: 20 };
+        const REVIEW_BATCH_SIZE = 8;
 
         const allDOMElements = {
             authContainer: document.getElementById('auth-container'),
@@ -332,6 +349,7 @@
         let audioContext;
         let isLessonActive = false;
         let isDragging = false;
+        let reviewBatchIndex = 0;
         
         function initialize() {
             try {
@@ -345,15 +363,34 @@
             updateUiForLoginStatus();
             setupEventListeners();
             restoreUiState();
+            applyTheme();
         }
 
         function setupEventListeners() {
+            document.getElementById('toggle-dark').onclick = ()=>{
+                const v = localStorage.getItem('theme') === 'dark' ? 'light' : 'dark';
+                localStorage.setItem('theme', v); applyTheme();
+            };
+            document.getElementById('btn-reset').onclick = ()=> handleResetProgress();
+            document.getElementById('btn-export').onclick = ()=>{
+                const blob = new Blob([JSON.stringify({wordsInProgress, masteredWords, learningBasket, lessonHistory}, null, 2)], {type:'application/json'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href=url; a.download='language_story_backup.json'; a.click();
+                URL.revokeObjectURL(url);
+            };
+            document.getElementById('import-file').onchange = async (e)=>{
+                const file = e.target.files[0]; if(!file) return;
+                try {
+                    const data = JSON.parse(await file.text());
+                    loadState(data); await saveState(); updateProgress(); showModal('تم الاستيراد بنجاح','نجاح');
+                } catch { showModal('ملف غير صالح','خطأ'); }
+            };
+
             allDOMElements.signinBtn.addEventListener('click', handleAuthClick);
             allDOMElements.signoutBtn.addEventListener('click', handleSignoutClick);
             allDOMElements.saveApiKeyBtn.addEventListener('click', handleSaveApiKey);
             allDOMElements.apiKeyInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleSaveApiKey(); });
             allDOMElements.newLessonBtn.addEventListener('click', handleNewLesson);
-            allDOMElements.resetProgressBtn.addEventListener('click', handleResetProgress);
             
             ['navHome','navHistory','navLearned','navBasket'].forEach(id=>{
                 allDOMElements[id].addEventListener('click', ()=> setTimeout(saveUiState, 0));
@@ -373,6 +410,11 @@
             lessonArea.addEventListener('touchend', handleInteractionEnd);
         }
         
+        function applyTheme(){
+            const dark = localStorage.getItem('theme') === 'dark';
+            document.documentElement.classList.toggle('dark', dark);
+        }
+
         function attemptSilentLogin() {
             if (localStorage.getItem('googleLogged') === '1' && gisInited) {
                 try { tokenClient.requestAccessToken({ prompt: '' }); } catch {}
@@ -386,7 +428,6 @@
                     document.querySelector('#nav-in-progress.text-sky-600') ? 'in-progress' :
                     'basket',
                 isLessonActive,
-                lastLesson: isLessonActive ? allDOMElements.lessonScreen.innerHTML : null,
                 scroll: window.scrollY
             };
             localStorage.setItem('uiState', JSON.stringify(state));
@@ -395,27 +436,26 @@
         function restoreUiState() {
             try {
                 const s = JSON.parse(localStorage.getItem('uiState') || '{}');
-                if (!s) return;
-                if (s.isLessonActive && s.lastLesson) {
-                    allDOMElements.lessonScreen.innerHTML = s.lastLesson;
+                const lastJson = localStorage.getItem('lastLessonData');
+                const lastIsRev = JSON.parse(localStorage.getItem('lastIsRevision') || 'false');
+                if (s?.isLessonActive && lastJson) {
+                    const data = JSON.parse(lastJson);
+                    renderLesson(data, lastIsRev);
                     isLessonActive = true;
                     showScreen(allDOMElements.lessonScreen);
-                    // Re-attach event listeners for the restored lesson content
-                    const storyEl = document.getElementById('story-container');
-                    if(storyEl) addSentenceTranslateButtons(storyEl);
-                    if(document.getElementById('check-answers-btn')) {
-                         document.getElementById('check-answers-btn').addEventListener('click', checkAnswers);
-                    }
-                } else {
-                    showTab(s.tab || 'home');
+                    requestAnimationFrame(()=> window.scrollTo(0, s.scroll || 0));
+                    return;
                 }
-                requestAnimationFrame(()=> window.scrollTo(0, s.scroll || 0));
+                showTab(s?.tab || 'home');
+                requestAnimationFrame(()=> window.scrollTo(0, s?.scroll || 0));
             } catch {}
         }
 
 
         function updateUiForLoginStatus() {
             if (isGoogleLoggedIn) {
+                document.getElementById('dashboard').classList.remove('hidden');
+                document.getElementById('dashboard').classList.add('flex');
                 allDOMElements.signinBtn.classList.add('hidden');
                 allDOMElements.signoutBtn.classList.remove('hidden');
                 allDOMElements.apiKeySection.classList.remove('hidden');
@@ -423,6 +463,8 @@
                     allDOMElements.mainContent.classList.remove('hidden');
                 }
             } else {
+                document.getElementById('dashboard').classList.add('hidden');
+                document.getElementById('dashboard').classList.remove('flex');
                 allDOMElements.signinBtn.classList.remove('hidden');
                 allDOMElements.signoutBtn.classList.add('hidden');
                 allDOMElements.apiKeySection.classList.add('hidden');
@@ -449,9 +491,20 @@
              return saveStateToDrive();
         }
         
+        function showGlobalLoader(msg='جاري التحميل…'){ 
+            document.getElementById('global-loader-text').textContent = msg;
+            document.getElementById('global-loader').classList.add('flex');
+            document.getElementById('global-loader').classList.remove('hidden'); 
+        }
+        function hideGlobalLoader(){ 
+            document.getElementById('global-loader').classList.remove('flex');
+            document.getElementById('global-loader').classList.add('hidden'); 
+        }
+
         async function loadStateFromDrive() {
             if (!gapiInited) await initializeGapiClient();
             await gapi.client.load('https://www.googleapis.com/discovery/v1/apis/drive/v3/rest');
+            showGlobalLoader('جاري تحميل تقدمك من Google Drive…');
 
             try {
                 if (driveFileId) {
@@ -460,6 +513,7 @@
                     const data = typeof raw === 'string' ? JSON.parse(raw) : raw;
                     loadState(data);
                     showModal('تم تحميل تقدمك من Google Drive بنجاح.');
+                    hideGlobalLoader();
                     return;
                 }
 
@@ -485,14 +539,16 @@
                 if (e.status === 401) tokenClient.requestAccessToken({ prompt: '' });
                 showModal('تعذر التحميل من Drive الآن.');
             }
+            hideGlobalLoader();
         }
 
         async function saveStateToDrive() {
             const tokenObj = gapi.client.getToken();
             if (!isGoogleLoggedIn || !tokenObj?.access_token) {
-                showModal('يرجى تسجيل الدخول إلى Google أولاً.');
+                // Do not show modal, just fail silently or save locally if that's the desired fallback.
                 return;
             }
+            showGlobalLoader('جاري حفظ تقدمك في Google Drive…');
 
             const appState = { wordsInProgress, masteredWords, learningBasket, lessonHistory };
 
@@ -550,6 +606,7 @@
                 console.error('Drive save error', e);
                 showModal('تعذّر الحفظ في Drive الآن.');
             }
+            hideGlobalLoader();
         }
 
 
@@ -664,37 +721,39 @@
             const repetitionWordsList = repetitionWords.map(w => w.word);
             
             const prompt = `
-            SYSTEM: You are an expert ESL teacher. STRICTLY A1 level only.
-            TASK: Create a lesson that MUST incorporate the USER_REQUIREMENTS while keeping language at A1.
-            If a user instruction conflicts with A1, keep the TOPIC/SETTING but simplify the language.
+            SYSTEM: You are an expert ESL teacher for absolute beginners (A1). You must strictly keep vocabulary and grammar at A1. 
+            If user requirements ask for complex ideas, KEEP the topic/setting but DOWNGRADE language to A1. Mention how you adapted them in "instructions_applied".
 
-            VOCAB TO USE (must all appear): ${lessonWords.join(', ')}.
+            VOCAB TO USE (must all appear exactly once or more): ${lessonWords.join(', ')}.
             NEW WORDS: ${newWords.join(', ')}  → wrap with <b>…</b>
             REPETITION: ${repetitionWordsList.join(', ')} → wrap with <i>…</i>
 
             USER_REQUIREMENTS: """${customInstructions || 'none'}"""
 
-            OUTPUT: one valid JSON object exactly with this shape and nothing else:
+            OUTPUT: one valid JSON object, no code fences:
             {
             "story_type": "story|dialogue|narrative",
             "story_mood": "happy|calm|exciting|neutral",
-            "story": "… with <b> and <i> tags …",
+            "story": "… with <b> and <i> tags … (~${storyWordCount} words, strictly A1)",
             "new_words": [{"word":"…","translation":"…"}],
-            "grammar_focus": {"title":"…","explanation":"…","examples":[{"example":"…","translation":"…"}]},
-            "useful_structures": [{"structure":"…","explanation":"…"}],
-            "pronunciation_tips": {"title":"…","tips":[{"context":"…","tip":"…"}]},
-            "exercises": [
-            {"type":"fill_in_the_blank","question":"The ___ is big.","answer":"dog"},
-            {"type":"multiple_choice","question":"What does the boy have?","options":["a cat","a dog","a car"],"answer":"a dog"},
-            {"type":"true_false","question":"The dog is small.","answer":"false"}
+            "grammar_focus": {
+                "title":"Present Simple at A1",
+                "explanation":"Use subject + base verb. Add -s with he/she/it.",
+                "examples":[{"example":"I go to school.","translation":"أنا أذهب إلى المدرسة."},{"example":"He goes home.","translation":"هو يذهب إلى البيت."}]
+            },
+            "useful_structures": [{"structure":"I like …","explanation":"للتعبير عن الإعجاب"}, {"structure":"There is/are","explanation":"للوصف البسيط"}],
+            "pronunciation_tips": {"title":"A1 Sounds","tips":[{"context":"th","tip":"ينطق مثل ذ/ث"},{"context":"-ed","tip":"قد تُنطق t أو d"}]},
+            "exercises":[
+            {"type":"fill_in_the_blank","question":"I ___ to school.","answer":"go"},
+            {"type":"multiple_choice","question":"What does he have?","options":["a car","a cat","a cup"],"answer":"a cat"},
+            {"type":"true_false","question":"They is happy.","answer":"false"}
             ],
-            "instructions_applied": "Briefly explain how the USER_REQUIREMENTS were followed."
+            "instructions_applied":"How the user instructions were followed while staying A1."
             }
 
             CONSTRAINTS:
-            - ~${storyWordCount} words total.
             - Only A1 vocabulary and A1 grammar (present simple; 'can' for ability).
-            - No code fences. No markdown outside string values.
+            - No markdown outside JSON strings. No code fences.
             `;
 
             try {
@@ -709,6 +768,8 @@
                 const text = result.candidates[0].content.parts[0].text;
                 const jsonString = text.replace(/```json/g, '').replace(/```/g, '').trim();
                 const lessonData = JSON.parse(jsonString);
+                localStorage.setItem('lastLessonData', JSON.stringify(lessonData));
+                localStorage.setItem('lastIsRevision', JSON.stringify(isRevision));
                 
                 lessonData.learnedWords = lessonWords;
                 lessonData.date = new Date().toLocaleString('ar-EG');
@@ -718,29 +779,32 @@
                     revised.forEach(w=>{
                         const i = wordsInProgress.findIndex(x=> x.word === w);
                         if (i>-1) {
-                        wordsInProgress[i].level = Math.min(4, (wordsInProgress[i].level||1)+1);
-                        wordsInProgress[i].lessonCounter = 0;
-                        if (wordsInProgress[i].level > 3) {
-                            masteredWords.push(wordsInProgress[i].word);
-                            wordsInProgress.splice(i,1);
-                        }
+                            const item = wordsInProgress[i];
+                            item.level = Math.min(4, (item.level||1)+1);
+                            item.lessonCounter = 0;
+                            item.reviewCount = (item.reviewCount || 0) + 1;
+                            item.lastReviewedAt = Date.now();
+                            if (item.level > 3) {
+                                masteredWords.push(item.word);
+                                wordsInProgress.splice(i,1);
+                            }
                         }
                     });
                 } else {
                     newWords.forEach(word => {
                         if (!wordsInProgress.some(w=>w.word===word) && !masteredWords.includes(word)) {
-                        wordsInProgress.push({ word, level: 1, lessonCounter: 0 });
+                            wordsInProgress.push({ word, level: 1, lessonCounter: 0, reviewCount: 0, lastReviewedAt: null });
                         }
                     });
                     repetitionWords.forEach(repWord => {
                         const idx = wordsInProgress.findIndex(item => item.word === repWord.word);
                         if (idx > -1) {
-                        wordsInProgress[idx].level = Math.min(4, (wordsInProgress[idx].level||1)+1);
-                        wordsInProgress[idx].lessonCounter = 0;
-                        if (wordsInProgress[idx].level > 3) {
-                            masteredWords.push(wordsInProgress[idx].word);
-                            wordsInProgress.splice(idx, 1);
-                        }
+                            wordsInProgress[idx].level = Math.min(4, (wordsInProgress[idx].level||1)+1);
+                            wordsInProgress[idx].lessonCounter = 0;
+                            if (wordsInProgress[idx].level > 3) {
+                                masteredWords.push(wordsInProgress[idx].word);
+                                wordsInProgress.splice(idx, 1);
+                            }
                         }
                     });
                 }
@@ -764,7 +828,7 @@
         
         function createSection(title, content) {
             return `
-                <div class="p-5 bg-white rounded-lg shadow-md">
+                <div class="p-5 bg-white rounded-lg shadow-md dark:bg-slate-800 dark:border dark:border-slate-700">
                     <h3 class="text-xl font-bold mb-4 text-sky-700">${title}</h3>
                     ${content}
                 </div>
@@ -772,26 +836,41 @@
         }
 
         function addSentenceTranslateButtons(container) {
-            const txt = container.innerHTML;
-            const parts = txt.split(/([.!?])\s+/);
-            let out = '';
-            for (let i=0; i<parts.length; i+=2) {
-                const sentence = (parts[i]||'').trim();
-                const punc = parts[i+1]||'';
-                if (!sentence) continue;
-                const encoded = sentence.replace(/"/g,'&quot;');
-                out += `<span class="sentence-chunk">${sentence}${punc} 
-                        <button class="sent-trans-btn text-sky-600" data-s="${encoded}" title="ترجمة الجملة">🌐</button>
-                        </span> `;
-            }
-            container.innerHTML = out;
-            container.querySelectorAll('.sent-trans-btn').forEach(btn=>{
+            const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false);
+            const textNodes = [];
+            let n; while ((n = walker.nextNode())) textNodes.push(n);
+
+            textNodes.forEach(node => {
+                const text = node.nodeValue;
+                const parts = text.split(/([.!?])(\s+)/);
+                if (parts.length < 2) return;
+
+                const frag = document.createDocumentFragment();
+                for (let i=0; i<parts.length; i+=3) {
+                const s = (parts[i] || '').trim();
+                const punc = parts[i+1] || '';
+                const space = parts[i+2] || '';
+                if (!s) { frag.appendChild(document.createTextNode(punc+space)); continue; }
+
+                const span = document.createElement('span');
+                span.className = 'sentence-chunk';
+                span.appendChild(document.createTextNode(s + punc + ' '));
+
+                const btn = document.createElement('button');
+                btn.className = 'sent-trans-btn text-sky-600';
+                btn.title = 'ترجمة الجملة';
+                btn.textContent = '🌐';
                 btn.addEventListener('click', async (e)=>{
-                e.stopPropagation();
-                const s = btn.dataset.s;
-                const tr = await getTranslation(s, false);
-                if (tr) showModal(`<div class="font-english">${s}</div><hr class="my-2"><div class="text-xl">${tr}</div>`, 'ترجمة الجملة');
+                    e.stopPropagation();
+                    const tr = await getTranslation(s, false);
+                    if (tr) showModal(`<div class="font-english">${s}</div><hr class="my-2"><div class="text-xl">${tr}</div>`, 'ترجمة الجملة');
                 });
+
+                span.appendChild(btn);
+                frag.appendChild(span);
+                if (space) frag.appendChild(document.createTextNode(space));
+                }
+                node.parentNode.replaceChild(frag, node);
             });
         }
 
@@ -800,15 +879,15 @@
             const wordsTitle = isRevision ? 'كلمات للمراجعة' : '2. الكلمات الجديدة';
             
             const optionsHtml = `
-                <div class="max-w-md mx-auto space-y-4 my-6 text-right p-4 border rounded-md bg-slate-50">
+                <div class="max-w-md mx-auto space-y-4 my-6 text-right p-4 border rounded-md bg-slate-50 dark:bg-slate-800 dark:border-slate-700">
                     <h3 class="text-lg font-bold text-center">خيارات الدرس القادم</h3>
                     <div>
-                        <label for="word-count-lesson" class="block text-sm font-medium text-slate-700">إجمالي كلمات القصة (تقريبيًا 50-500)</label>
-                        <input type="number" id="word-count-lesson" value="100" min="50" max="500" class="mt-1 block w-full p-2 border border-slate-300 rounded-md shadow-sm">
+                        <label for="word-count-lesson" class="block text-sm font-medium text-slate-700 dark:text-slate-200">إجمالي كلمات القصة (تقريبيًا 50-500)</label>
+                        <input type="number" id="word-count-lesson" value="100" min="50" max="500" class="mt-1 block w-full p-2 border border-slate-300 rounded-md shadow-sm dark:bg-slate-700 dark:border-slate-600">
                     </div>
                     <div>
-                        <label for="custom-prompt-lesson" class="block text-sm font-medium text-slate-700">اكتب تعليمات للقصة (اختياري)</label>
-                        <textarea id="custom-prompt-lesson" rows="2" class="mt-1 block w-full p-2 border border-slate-300 rounded-md shadow-sm" placeholder="مثال: قصة عن حيوانات في حديقة..."></textarea>
+                        <label for="custom-prompt-lesson" class="block text-sm font-medium text-slate-700 dark:text-slate-200">اكتب تعليمات للقصة (اختياري)</label>
+                        <textarea id="custom-prompt-lesson" rows="2" class="mt-1 block w-full p-2 border border-slate-300 rounded-md shadow-sm dark:bg-slate-700 dark:border-slate-600" placeholder="مثال: قصة عن حيوانات في حديقة..."></textarea>
                     </div>
                 </div>
             `;
@@ -816,7 +895,7 @@
             allDOMElements.lessonScreen.innerHTML = `
                 ${createSection(lessonTitle, 
                     `<div id="story-container" class="text-lg/relaxed font-english lesson-content" dir="ltr" data-story-type="${data.story_type}" data-mood="${data.story_mood || 'neutral'}">${formatStory(data.story, data.story_type)}</div>
-                     <div id="story-audio-player" class="mt-4 border-t pt-4"></div>`
+                     <div id="story-audio-player" class="mt-4 border-t pt-4 dark:border-slate-700"></div>`
                 )}
                 ${createSection(wordsTitle, createTable(data.new_words, ['الكلمة', 'المعنى'], 'word', 'translation'))}
                 ${createSection('3. قواعد نستفيدها', renderGrammarSection(data.grammar_focus))}
@@ -831,6 +910,16 @@
             `;
             
             const storyContainer = document.getElementById('story-container');
+            const paraBtn = document.createElement('button');
+            paraBtn.className = 'ml-2 px-2 py-1 text-sm bg-amber-100 rounded border dark:bg-amber-900 dark:border-amber-700 dark:text-amber-200';
+            paraBtn.textContent = 'ترجمة الفقرة';
+            paraBtn.onclick = async () => {
+                const s = storyContainer.textContent.trim();
+                const tr = await getTranslation(s, false);
+                if (tr) showModal(`<div class="font-english">${s}</div><hr class="my-2"><div class="text-xl">${tr}</div>`,'ترجمة الفقرة');
+            };
+            storyContainer.parentElement.insertBefore(paraBtn, storyContainer);
+
             addSentenceTranslateButtons(storyContainer);
             renderStoryAudioPlayer(storyContainer.textContent.trim(), data.story_mood || 'neutral', data.story_type); 
 
@@ -871,7 +960,7 @@
                     <audio id="full-story-audio" class="w-full" controls></audio>
                 </div>
                  <div class="mt-2">
-                    <input type="text" id="audio-custom-prompt" class="w-full p-2 border rounded-md text-sm" placeholder="اكتب تعليمات للقارئ (مثال: اقرأ بصوت هادئ)...">
+                    <input type="text" id="audio-custom-prompt" class="w-full p-2 border rounded-md text-sm dark:bg-slate-700 dark:border-slate-600" placeholder="اكتب تعليمات للقارئ (مثال: اقرأ بصوت هادئ)...">
                 </div>
             `;
             
@@ -893,7 +982,8 @@
                 let audioUrl;
                 if (storyType === 'dialogue') {
                     const fullHtml = document.getElementById('story-container').innerHTML;
-                    audioUrl = await speakDialogue(fullHtml, true);
+                    await speakDialogue(fullHtml);
+                    audioUrl = null; // Dialogue handles its own playback
                 } else {
                     audioUrl = await speakText(storyText, mood, true, customPrompt);
                 }
@@ -934,44 +1024,11 @@
             });
         }
         
-        function wrapWordsInSpans(htmlContent) {
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = htmlContent;
-            
-            const walker = document.createTreeWalker(tempDiv, NodeFilter.SHOW_TEXT, null, false);
-            let node;
-            const textNodes = [];
-            while(node = walker.nextNode()) {
-                if (node.parentNode.tagName !== 'B' && node.parentNode.tagName !== 'I' && node.parentNode.tagName !== 'SPAN') {
-                     textNodes.push(node);
-                }
-            }
-
-            textNodes.forEach(node => {
-                const parent = node.parentNode;
-                const words = node.nodeValue.split(/(\s+)/);
-                const fragment = document.createDocumentFragment();
-                words.forEach(word => {
-                    if (word.trim().length > 0) {
-                        const span = document.createElement('span');
-                        span.className = 'word-span';
-                        span.textContent = word;
-                        fragment.appendChild(span);
-                    } else {
-                        fragment.appendChild(document.createTextNode(word));
-                    }
-                });
-                parent.replaceChild(fragment, node);
-            });
-
-            return tempDiv.innerHTML;
-        }
-
         function renderGrammarSection(grammar) {
             if (!grammar) return '<p>لا توجد ملاحظات نحوية لهذا الدرس.</p>';
             let html = `
                 <h4 class="font-bold text-lg mb-2">${grammar.title}</h4>
-                <p class="text-slate-600/90 mb-4">${grammar.explanation}</p>
+                <p class="text-slate-600/90 mb-4 dark:text-slate-300">${grammar.explanation}</p>
             `;
             if (grammar.examples && grammar.examples.length > 0) {
                 html += createTable(grammar.examples, ['المثال', 'الترجمة'], 'example', 'translation');
@@ -985,11 +1042,12 @@
         }
 
         function formatStory(story, type) {
-            const wrappedStory = wrapWordsInSpans(story);
-            if (type !== 'dialogue') return wrappedStory;
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = story;
+            if (type !== 'dialogue') return tempDiv.innerHTML;
             
             const speakers = [];
-            const lines = wrappedStory.split(/\n|<br>|<br\/>/g);
+            const lines = tempDiv.innerHTML.split(/\n|<br>|<br\/>/g);
             return lines.map(line => {
                 if (!line.trim()) return '';
                 const match = line.match(/^(.*?):/);
@@ -1007,11 +1065,11 @@
         }
 
         function createTable(data, headers, key1, key2) {
-            let tableHTML = '<div class="overflow-x-auto"><table class="table-style">';
-            tableHTML += `<thead><tr><th>${headers[0]}</th><th>${headers[1]}</th></tr></thead>`;
+            let tableHTML = '<div class="overflow-x-auto"><table class="table-style dark:text-slate-200">';
+            tableHTML += `<thead><tr><th class="dark:bg-slate-700 dark:border-slate-600">${headers[0]}</th><th class="dark:bg-slate-700 dark:border-slate-600">${headers[1]}</th></tr></thead>`;
             tableHTML += '<tbody>';
             data.forEach(item => {
-                tableHTML += `<tr><td>${item[key1]}</td><td>${item[key2]}</td></tr>`;
+                tableHTML += `<tr class="dark:border-slate-600"><td class="dark:border-slate-600">${item[key1]}</td><td class="dark:border-slate-600">${item[key2]}</td></tr>`;
             });
             tableHTML += '</tbody></table></div>';
             return tableHTML;
@@ -1024,19 +1082,19 @@
             let html = '<div class="space-y-4">';
             exercises.forEach((ex, index) => {
                 const cleanQuestion = ex.question ? ex.question.replace(/\*\*/g, '') : 'سؤال غير متوفر';
-                html += `<div class="exercise p-3 border-r-4 border-slate-200" data-answer="${ex.answer}">`;
+                html += `<div class="exercise p-3 border-r-4 border-slate-200 dark:border-slate-600" data-answer="${ex.answer}">`;
                 if (ex.type === 'fill_in_the_blank') {
-                    html += `<p class="font-english" dir="ltr">${index + 1}. ${cleanQuestion.replace('___', '<input type="text" class="exercise-input border-b-2 bg-transparent text-center w-24 mx-1">')}</p>`;
+                    html += `<p class="font-english" dir="ltr">${index + 1}. ${cleanQuestion.replace('___', '<input type="text" class="exercise-input border-b-2 bg-transparent text-center w-24 mx-1 dark:border-slate-500">')}</p>`;
                 } else if (ex.type === 'multiple_choice') {
                     html += `<p class="font-english" dir="ltr">${index + 1}. ${cleanQuestion}</p>
                              <div class="flex flex-wrap gap-2 mt-2" dir="ltr">
-                                ${(ex.options && Array.isArray(ex.options)) ? ex.options.map(opt => `<label class="flex items-center gap-2 p-2 border rounded-md cursor-pointer"><input type="radio" name="ex${index}" value="${opt}" class="exercise-input"> ${opt}</label>`).join('') : '<p class="text-red-500">خطأ: لم يتم توفير الخيارات لهذا السؤال.</p>'}
+                                ${(ex.options && Array.isArray(ex.options)) ? ex.options.map(opt => `<label class="flex items-center gap-2 p-2 border rounded-md cursor-pointer dark:border-slate-600"><input type="radio" name="ex${index}" value="${opt}" class="exercise-input"> ${opt}</label>`).join('') : '<p class="text-red-500">خطأ: لم يتم توفير الخيارات لهذا السؤال.</p>'}
                              </div>`;
                 } else if (ex.type === 'true_false') {
                      html += `<p class="font-english" dir="ltr">${index + 1}. ${cleanQuestion}</p>
                               <div class="flex gap-4 mt-2" dir="ltr">
-                                 <label class="flex items-center gap-2 p-2 border rounded-md cursor-pointer"><input type="radio" name="ex${index}" value="true" class="exercise-input">True</label>
-                                 <label class="flex items-center gap-2 p-2 border rounded-md cursor-pointer"><input type="radio" name="ex${index}" value="false" class="exercise-input">False</label>
+                                 <label class="flex items-center gap-2 p-2 border rounded-md cursor-pointer dark:border-slate-600"><input type="radio" name="ex${index}" value="true" class="exercise-input">True</label>
+                                 <label class="flex items-center gap-2 p-2 border rounded-md cursor-pointer dark:border-slate-600"><input type="radio" name="ex${index}" value="false" class="exercise-input">False</label>
                               </div>`;
                 }
                 html += '</div>';
@@ -1053,13 +1111,13 @@
                 const correctAnswer = ex.dataset.answer ? ex.dataset.answer.toLowerCase() : '';
                 const inputs = ex.querySelectorAll('.exercise-input');
                 let userAnswer = '';
-                ex.classList.remove('border-green-400', 'border-red-400');
+                ex.classList.remove('border-green-400', 'border-red-400', 'dark:border-green-400', 'dark:border-red-400');
 
                 if (inputs.length > 0 && inputs[0].type === 'text') {
                     userAnswer = inputs[0].value.trim().toLowerCase();
                     if (userAnswer === correctAnswer) {
-                        ex.classList.add('border-green-400'); correctCount++;
-                    } else { ex.classList.add('border-red-400'); }
+                        ex.classList.add('border-green-400', 'dark:border-green-400'); correctCount++;
+                    } else { ex.classList.add('border-red-400', 'dark:border-red-400'); }
                 } else {
                     let answered = false;
                     inputs.forEach(input => {
@@ -1067,11 +1125,11 @@
                             answered = true;
                             userAnswer = input.value.toLowerCase();
                             if (userAnswer === correctAnswer) {
-                                ex.classList.add('border-green-400'); correctCount++;
-                            } else { ex.classList.add('border-red-400'); }
+                                ex.classList.add('border-green-400', 'dark:border-green-400'); correctCount++;
+                            } else { ex.classList.add('border-red-400', 'dark:border-red-400'); }
                         }
                     });
-                    if (!answered) ex.classList.add('border-red-400');
+                    if (!answered) ex.classList.add('border-red-400', 'dark:border-red-400');
                 }
             });
             document.getElementById('results-container').innerHTML = `<p class="font-bold">نتيجتك: ${correctCount} من ${exercises.length} إجابات صحيحة.</p>`;
@@ -1091,14 +1149,24 @@
             setTimeout(saveUiState, 0);
         }
 
+        function selectRevisionSet(target=20) {
+            const { b2, b1, b0 } = getReviewBuckets();
+            const pick = (arr, n) => arr.sort(()=>0.5-Math.random()).slice(0,n);
+            const out = [];
+            out.push(...pick(b1, Math.min(8, target - out.length)));
+            out.push(...pick(b2, Math.min(6, target - out.length)));
+            out.push(...pick(b0, Math.max(0, target - out.length)));
+            return out.map(x => x.word);
+        }
+
         function handleRevisionLesson() {
             const wordCount = document.getElementById('word-count-review').value;
             const customInstructions = document.getElementById('custom-prompt-review').value;
-            const wordsForRevision = [...wordsInProgress.map(w => w.word)]
-                .sort(()=>0.5-Math.random()).slice(0, 20);
-            if (wordsForRevision.length>0) {
-                const repObjs = wordsForRevision.map(w=>({word:w}));
+            const wordsForRevision = selectRevisionSet(20);
+            if (wordsForRevision.length) {
+                const repObjs = wordsForRevision.map(w => ({ word: w }));
                 generateLesson([], repObjs, false, true, wordCount, customInstructions);
+                showScreen(allDOMElements.lessonScreen);
             }
             setTimeout(saveUiState, 0);
         }
@@ -1109,9 +1177,9 @@
                 return;
             }
             allDOMElements.historyList.innerHTML = lessonHistory.map((lesson, index) => `
-                <div class="p-3 border rounded-md hover:bg-slate-100 cursor-pointer" onclick="viewHistoryItem(${index})">
+                <div class="p-3 border rounded-md hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-700 cursor-pointer" onclick="viewHistoryItem(${index})">
                     <p class="font-bold">درس بتاريخ: ${lesson.date}</p>
-                    <p class="text-sm text-slate-600 font-english" dir="ltr">${(lesson.learnedWords || []).slice(0, 5).join(', ')}...</p>
+                    <p class="text-sm text-slate-600 font-english dark:text-slate-400" dir="ltr">${(lesson.learnedWords || []).slice(0, 5).join(', ')}...</p>
                 </div>
             `).join('');
         }
@@ -1151,7 +1219,7 @@
             const popup = allDOMElements.selectionPopup;
             popup.classList.remove('hidden');
 
-            const vw = window.innerWidth, vh = window.innerHeight;
+            const vw = window.innerWidth;
             const pad = 8, w = popup.offsetWidth || 140, h = popup.offsetHeight || 40;
             let left = rect.left + rect.width/2 - w/2;
             let top  = rect.top - h - 10;
@@ -1272,42 +1340,70 @@
             saveState();
             showModal(`"${englishText}" <br><br> تم حفظها بنجاح في سلة المراجعة!`);
         }
+        
+        function getReviewBuckets() {
+            const b0=[], b1=[], b2=[];
+            for (const it of wordsInProgress) {
+                const c = it.reviewCount || 0;
+                if (c === 0) b0.push(it);
+                else if (c < 3) b1.push(it);
+                else b2.push(it);
+            }
+            return { b0, b1, b2 };
+        }
 
         function renderInProgressWords() {
             const container = allDOMElements.inProgressScreen;
             
+            const { b0, b1, b2 } = getReviewBuckets();
+            const bucketsHtml = `
+            <div class="grid md:grid-cols-3 gap-3 text-center mb-6">
+                <div class="p-3 border rounded-md dark:border-slate-700"><div class="text-slate-500 text-sm dark:text-slate-400">لم تُراجع</div><div class="text-2xl font-bold">${b0.length}</div></div>
+                <div class="p-3 border rounded-md dark:border-slate-700"><div class="text-slate-500 text-sm dark:text-slate-400">راجعتها 1-2 مرة</div><div class="text-2xl font-bold">${b1.length}</div></div>
+                <div class="p-3 border rounded-md dark:border-slate-700"><div class="text-slate-500 text-sm dark:text-slate-400">راجعتها 3+ مرات</div><div class="text-2xl font-bold">${b2.length}</div></div>
+            </div>
+            `;
+            
             const optionsHtml = `
-                <div class="max-w-md mx-auto space-y-4 mb-6 text-right p-4 border rounded-md bg-slate-50">
+                <div class="max-w-md mx-auto space-y-4 mb-6 text-right p-4 border rounded-md bg-slate-50 dark:bg-slate-800 dark:border-slate-700">
                     <h3 class="text-lg font-bold text-center">خيارات المراجعة</h3>
                     <div>
-                        <label for="word-count-review" class="block text-sm font-medium text-slate-700">إجمالي كلمات القصة (تقريبيًا 50-500)</label>
-                        <input type="number" id="word-count-review" value="100" min="50" max="500" class="mt-1 block w-full p-2 border border-slate-300 rounded-md shadow-sm">
+                        <label for="word-count-review" class="block text-sm font-medium text-slate-700 dark:text-slate-200">إجمالي كلمات القصة (تقريبيًا 50-500)</label>
+                        <input type="number" id="word-count-review" value="100" min="50" max="500" class="mt-1 block w-full p-2 border border-slate-300 rounded-md shadow-sm dark:bg-slate-700 dark:border-slate-600">
                     </div>
                     <div>
-                        <label for="custom-prompt-review" class="block text-sm font-medium text-slate-700">اكتب تعليمات للقصة (اختياري)</label>
-                        <textarea id="custom-prompt-review" rows="2" class="mt-1 block w-full p-2 border border-slate-300 rounded-md shadow-sm" placeholder="مثال: حوار قصير بين شخصين في مطعم..."></textarea>
+                        <label for="custom-prompt-review" class="block text-sm font-medium text-slate-700 dark:text-slate-200">اكتب تعليمات للقصة (اختياري)</label>
+                        <textarea id="custom-prompt-review" rows="2" class="mt-1 block w-full p-2 border border-slate-300 rounded-md shadow-sm dark:bg-slate-700 dark:border-slate-600" placeholder="مثال: حوار قصير بين شخصين في مطعم..."></textarea>
                     </div>
                 </div>
             `;
 
-            const buttonHtml = wordsInProgress.length >= 15
+            const buttonHtml = wordsInProgress.length > 0
                 ? `<div class="text-center mb-6"><button id="review-lesson-btn" class="bg-sky-600 text-white px-6 py-2 rounded-md hover:bg-sky-700 transition">مراجعة بقصة جديدة</button></div>`
-                : `<p class="text-center text-slate-500 mb-6">تحتاج لوجود ${15 - wordsInProgress.length} كلمات أخرى على الأقل هنا لبدء المراجعة بقصة.</p>`;
+                : `<p class="text-center text-slate-500 mb-6">لا توجد كلمات للمراجعة بعد.</p>`;
 
             const wordsHtml = wordsInProgress.length === 0 
                 ? '<p class="text-center text-slate-500">لا توجد كلمات قيد التعلم حالياً.</p>'
                 : `<div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                     ${[...wordsInProgress].sort((a,b) => a.word.localeCompare(b.word)).map(item => `
-                        <div class="p-3 border rounded-md text-center cursor-pointer hover:bg-sky-100 flex flex-col justify-between" onclick="handleInProgressWordClick('${item.word}')">
+                        <div class="p-3 border rounded-md text-center cursor-pointer hover:bg-sky-100 dark:border-slate-700 dark:hover:bg-slate-700 flex flex-col justify-between" onclick="handleInProgressWordClick('${item.word}')">
                             <span class="font-english font-bold">${item.word}</span>
                             <span class="text-xs text-slate-500 mt-1">المستوى ${item.level}</span>
                         </div>
                     `).join('')}
                    </div>`;
             
-            container.innerHTML = createSection('كلمات قيد التعلم', optionsHtml + buttonHtml + wordsHtml);
+            const masteredHtml = masteredWords.length
+                ? `<div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">${masteredWords.sort().map(w=>`
+                    <div class="p-3 border rounded-md text-center bg-green-50 dark:bg-green-900/50 dark:border-green-800"><span class="font-english font-bold">${w}</span></div>`).join('')}
+                    </div>`
+                : '<p class="text-center text-slate-500 mt-4">لا توجد كلمات متقنة بعد.</p>';
 
-            if (wordsInProgress.length >= 15) {
+            container.innerHTML = createSection('إحصاءات المراجعة', bucketsHtml) + 
+                                createSection('كلمات قيد التعلم', optionsHtml + buttonHtml + wordsHtml) +
+                                createSection('الكلمات المتقنة', masteredHtml);
+
+            if (wordsInProgress.length > 0) {
                 document.getElementById('review-lesson-btn').addEventListener('click', handleRevisionLesson);
             }
         }
@@ -1342,6 +1438,11 @@
                 showModal(`تم نقل "${wordToMaster}" إلى قائمة الكلمات المتقنة.`, 'تم بنجاح');
             }
         }
+        
+        function getCurrentBasketBatch() {
+            const start = reviewBatchIndex * REVIEW_BATCH_SIZE;
+            return learningBasket.slice(start, start + REVIEW_BATCH_SIZE);
+        }
 
         function renderBasket() {
             const basketContainer = allDOMElements.basketScreen;
@@ -1350,9 +1451,11 @@
                 return;
             }
 
+            const batch = getCurrentBasketBatch();
+
             const flashcardsHtml = `
                 <div class="flashcard-container">
-                    ${learningBasket.map(item => `
+                    ${batch.map(item => `
                         <div class="flashcard" onclick="this.classList.toggle('is-flipped')">
                             <div class="flashcard-inner">
                                 <div class="flashcard-front font-english">${item.en}</div>
@@ -1363,30 +1466,39 @@
                 </div>
             `;
 
-            const matchingHtml = renderMatchingExercise();
+            const pager = `
+            <div class="flex justify-center items-center gap-3 mt-4">
+                <button id="b-prev" class="px-3 py-1 border rounded ${reviewBatchIndex===0?'opacity-50 pointer-events-none':''}">السابق</button>
+                <div>المجموعة ${reviewBatchIndex+1} / ${Math.max(1, Math.ceil(learningBasket.length / REVIEW_BATCH_SIZE))}</div>
+                <button id="b-next" class="px-3 py-1 border rounded ${((reviewBatchIndex+1)*REVIEW_BATCH_SIZE>=learningBasket.length)?'opacity-50 pointer-events-none':''}">التالي</button>
+            </div>
+            `;
 
             basketContainer.innerHTML = `
-                ${createSection('1. بطاقات تعليمية (Flashcards)', '<p class="mb-4 text-sm text-slate-500">اضغط على البطاقة لقلبها.</p>' + flashcardsHtml)}
-                ${createSection('2. تمرين التوصيل', '<p class="mb-4 text-sm text-slate-500">صلِّ الكلمة بترجمتها.</p>' + matchingHtml)}
-                ${createSection('3. اختبار اختياري سريع', renderMCQFromBasket())}
-                ${createSection('4. لعبة الذاكرة', renderMemoryPairs())}
+                ${createSection('1. بطاقات تعليمية (Flashcards)', '<p class="mb-4 text-sm text-slate-500">اضغط على البطاقة لقلبها.</p>' + flashcardsHtml + pager)}
+                ${createSection('2. تمرين التوصيل', '<p class="mb-4 text-sm text-slate-500">صلِّ الكلمة بترجمتها.</p>' + renderMatchingExercise(batch))}
+                ${createSection('3. اختبار اختياري سريع', renderMCQFromBasket(batch))}
+                ${createSection('4. لعبة الذاكرة', renderMemoryPairs(batch))}
             `;
             
+            document.getElementById('b-prev')?.addEventListener('click', ()=>{ reviewBatchIndex=Math.max(0, reviewBatchIndex-1); renderBasket(); });
+            document.getElementById('b-next')?.addEventListener('click', ()=>{ const max = Math.ceil(learningBasket.length/REVIEW_BATCH_SIZE)-1; reviewBatchIndex=Math.min(max, reviewBatchIndex+1); renderBasket(); });
+
             setupMatchingExerciseListeners();
         }
 
-        function renderMCQFromBasket(qCount=8) {
-            const pool = [...learningBasket];
+        function renderMCQFromBasket(source, qCount=8) {
+            const pool = [...source];
             if (pool.length < 3) return '<p class="text-slate-500">أضف كلمات أكثر لتوليد اختبار.</p>';
             const qs = [];
             for (let i=0; i<Math.min(qCount, pool.length); i++) {
                 const correct = pool[i];
-                const others = pool.filter(x=>x.id!==correct.id).sort(()=>0.5-Math.random()).slice(0,2);
+                const others = learningBasket.filter(x=>x.id!==correct.id).sort(()=>0.5-Math.random()).slice(0,2);
                 const opts = [correct, ...others].sort(()=>0.5-Math.random());
                 qs.push({q: correct.en, a: correct.ar, opts: opts.map(o=>o.ar)});
             }
             let html = qs.map((q,idx)=>`
-                <div class="p-3 border rounded-md mb-2" data-a="${q.a}">
+                <div class="p-3 border rounded-md mb-2 dark:border-slate-700" data-a="${q.a}">
                 <p class="font-english mb-2">${idx+1}. ${q.q}</p>
                 ${q.opts.map(o=>`<label class="block"><input class="exercise-input mr-2" type="radio" name="mcq${idx}" value="${o}">${o}</label>`).join('')}
                 </div>
@@ -1396,12 +1508,12 @@
             setTimeout(()=>{
                 document.getElementById('check-mcq').onclick=()=>{
                 let ok=0, n=qs.length;
-                document.querySelectorAll('[data-a]').forEach(box=>{
+                document.querySelectorAll('#basket-screen [data-a]').forEach(box=>{
                     const a = box.dataset.a;
                     const v = box.querySelector('input:checked')?.value;
-                    box.classList.remove('border-green-400','border-red-400');
-                    if (v===a){ ok++; box.classList.add('border-green-400'); }
-                    else { box.classList.add('border-red-400'); }
+                    box.classList.remove('border-green-400','border-red-400','dark:border-green-400','dark:border-red-400');
+                    if (v===a){ ok++; box.classList.add('border-green-400','dark:border-green-400'); }
+                    else { box.classList.add('border-red-400','dark:border-red-400'); }
                 });
                 document.getElementById('mcq-res').textContent = `نتيجتك: ${ok} / ${n}`;
                 };
@@ -1409,8 +1521,8 @@
             return html;
         }
 
-        function renderMemoryPairs() {
-            const pool = [...learningBasket].slice(0,8);
+        function renderMemoryPairs(source) {
+            const pool = [...source].slice(0,8);
             if (pool.length<4) return '<p class="text-slate-500">تحتاج 4 عناصر على الأقل.</p>';
             const cards = [];
             pool.forEach(it=>{
@@ -1419,7 +1531,7 @@
             });
             cards.sort(()=>0.5-Math.random());
             let html = `<div id="mem-grid" class="grid grid-cols-4 gap-2">` +
-                cards.map((c,i)=>`<button class="p-3 border rounded bg-white" data-id="${c.id}" data-i="${i}">${c.t}</button>`).join('') +
+                cards.map((c,i)=>`<button class="p-3 border rounded bg-white dark:bg-slate-700 dark:border-slate-600" data-id="${c.id}" data-i="${i}">${c.t}</button>`).join('') +
                 `</div><div id="mem-msg" class="mt-2 font-bold"></div>`;
             setTimeout(()=>{
                 let first=null, done=0;
@@ -1443,15 +1555,15 @@
             return html;
         }
         
-        function renderMatchingExercise() {
-            const shuffledEn = [...learningBasket].sort(() => 0.5 - Math.random());
-            const shuffledAr = [...learningBasket].sort(() => 0.5 - Math.random());
+        function renderMatchingExercise(source) {
+            const shuffledEn = [...source].sort(() => 0.5 - Math.random());
+            const shuffledAr = [...source].sort(() => 0.5 - Math.random());
 
             const enHtml = shuffledEn.map(item => 
-                `<div class="match-item font-english" data-id="${item.id}">${item.en}</div>`
+                `<div class="match-item font-english dark:border-slate-600" data-id="${item.id}">${item.en}</div>`
             ).join('');
             const arHtml = shuffledAr.map(item => 
-                `<div class="match-item" data-id="${item.id}">${item.ar}</div>`
+                `<div class="match-item dark:border-slate-600" data-id="${item.id}">${item.ar}</div>`
             ).join('');
 
             return `
@@ -1527,36 +1639,22 @@
             } catch { return null; }
         }
 
-        async function concatWavBlobs(blobs) {
-            const parts = [];
-            for (const b of blobs) parts.push(await b.arrayBuffer());
-            return new Blob(parts, {type:'audio/wav'});
-        }
-
-        async function speakDialogue(fullHtml, returnUrlOnly=false) {
+        async function speakDialogue(fullHtml) {
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = fullHtml;
             const lines = Array.from(tempDiv.querySelectorAll('.dialogue-line')).map(el => el.textContent.trim());
             const voices = ['Zephyr','Kore','Puck','Umbriel','Leda','Gacrux'];
             let vIdx = 0;
-            const blobs = [];
+
             for (const line of lines) {
                 const m = line.match(/^\s*([^:]+):\s*(.*)$/);
                 const seg = m ? m[2] : line;
                 if (!seg) continue;
-                const voiceName = voices[vIdx % voices.length]; vIdx++;
-                const audioUrl = await synthOne(seg, voiceName);
-                if (audioUrl) {
-                const b = await (await fetch(audioUrl)).blob();
-                blobs.push(b);
-                }
+                const url = await synthOne(seg, voices[vIdx++ % voices.length]);
+                if (url) { await new Promise(r => { const a = new Audio(url); a.onended = r; a.play(); }); }
             }
-            if (!blobs.length) return null;
-            const merged = await concatWavBlobs(blobs);
-            const url = URL.createObjectURL(merged);
-            if (returnUrlOnly) return url; else new Audio(url).play();
+            return null;
         }
-
 
         async function speakText(text, mood = 'neutral', returnUrlOnly = false, customPrompt = '') {
             if (!apiKey || !audioContext) {
@@ -1653,7 +1751,7 @@
                 learningBasket = [];
                 lessonHistory = [];
                 isLessonActive = false;
-                saveState(); // This will now save an empty state to Drive if logged in
+                saveState();
                 updateProgress();
                 showTab('home');
             }
