@@ -138,7 +138,7 @@
             
             <div id="stats-section" class="mb-6 p-4 bg-white rounded-lg shadow-md flex flex-wrap justify-around text-center dark:bg-slate-800 dark:border dark:border-slate-700">
                 <div><p class="text-slate-500 dark:text-slate-400">إجمالي الكلمات</p><p id="total-words" class="text-2xl font-bold text-sky-600 font-english">0</p></div>
-                <div><p class="text-slate-500 dark:text-slate-400">كلمات تعلمتها</p><p id="learned-words" class="text-2xl font-bold text-green-600 font-english">0</p></div>
+                <div><p class="text-slate-500 dark:text-slate-400">كلمات قيد التعلم</p><p id="learned-words" class="text-2xl font-bold text-green-600 font-english">0</p></div>
                 <div><p class="text-slate-500 dark:text-slate-400">الكلمات المتبقية</p><p id="remaining-words" class="text-2xl font-bold text-amber-600 font-english">0</p></div>
             </div>
 
@@ -483,7 +483,6 @@
 
 
         function updateUiForLoginStatus() {
-            const dash = document.getElementById('dashboard');
             if (isGoogleLoggedIn) {
                 allDOMElements.signinBtn.classList.add('hidden');
                 document.getElementById('user-chip').classList.remove('hidden');
@@ -649,10 +648,10 @@
 
         function updateProgress() {
             const learnedAndMastered = [...wordsInProgress.map(w => w.word), ...masteredWords];
-            const remainingWords = a1Words.filter(word => !learnedAndMastered.includes(word));
+            const remainingWords = a1Words.filter(word => !learnedAndMastered.includes(word) && !wordsInProgress.some(w => w.word === word));
             
             allDOMElements.totalWordsEl.textContent = a1Words.length;
-            allDOMElements.learnedWordsEl.textContent = learnedAndMastered.length;
+            allDOMElements.learnedWordsEl.textContent = wordsInProgress.length; // Changed to reflect "in progress"
             allDOMElements.remainingWordsEl.textContent = remainingWords.length;
         }
 
@@ -731,12 +730,13 @@
         
         function selectWordsForLesson() {
             const targetWordCount = 20; 
+            const targetRepetitionCount = 10;
             
             wordsInProgress.forEach(word => word.lessonCounter++);
 
             const dueForRepetition = wordsInProgress.filter(item => item.level < 4 && item.lessonCounter >= repetitionIntervals[item.level]);
             
-            const repetitionWords = dueForRepetition.slice(0, Math.floor(targetWordCount / 2));
+            const repetitionWords = dueForRepetition.sort(()=> 0.5 - Math.random()).slice(0, targetRepetitionCount);
             const newWordsCount = targetWordCount - repetitionWords.length;
             
             const learnedAndMastered = [...wordsInProgress.map(w => w.word), ...masteredWords];
@@ -755,22 +755,24 @@
             showScreen(allDOMElements.loadingScreen);
 
             const lessonWords = [...newWords, ...repetitionWords.map(w => w.word)];
+            const newWordsList = newWords;
             const repetitionWordsList = repetitionWords.map(w => w.word);
             
             const prompt = `
             You are an expert English teacher for absolute beginners (A1 level) who speak Arabic.
             Your task is to create a lesson using these ${lessonWords.length} words: ${lessonWords.join(', ')}.
-            The words ${newWords.join(', ')} are NEW. Highlight them with <b>tags</b>.
+            The words ${newWordsList.join(', ')} are NEW. Highlight them with <b>tags</b>.
             The words ${repetitionWordsList.join(', ')} are for REPETITION. Highlight them with <i>tags</i>.
 
             **EXTREMELY IMPORTANT RULES:**
-            1.  **A1 Level ONLY:** You MUST use ONLY words from the A1 vocabulary list. The grammar and sentence structure must also be strictly A1 level.
+            1.  **A1 Level ONLY:** You MUST use ONLY words from the A1 vocabulary list. The grammar and sentence structure must also be strictly A1 level. The sentences can be longer and connected, but must remain simple.
             2.  **Natural Sentences:** The text should be natural, coherent, and easy to read.
             3.  **DO NOT USE:** Advanced grammar or tenses. Stick to the Present Simple and 'can' for ability.
             4.  **DIVERSIFY CONTENT:** Randomly choose one style: Story, Dialogue (with English names), or Narrative.
             5.  **JSON FORMAT:** The entire response must be a single, valid JSON object.
             6.  **STORY LENGTH:** The total length of the story must be approximately ${storyWordCount} words.
             7.  **CUSTOM INSTRUCTIONS:** Follow these user instructions if provided: "${customInstructions || 'No specific instructions.'}"
+            8.  **EDUCATIONAL CONTENT:** The 'explanation' fields for grammar and pronunciation must be detailed, in ARABIC, and provide genuine educational value for a beginner.
 
             ${rewrite ? 'Rewrite the story and exercises with the same words but a different style.' : 'Create a new lesson.'}
 
@@ -1031,6 +1033,33 @@
         function formatStory(story, type) {
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = story;
+            
+            const walker = document.createTreeWalker(tempDiv, NodeFilter.SHOW_TEXT, null, false);
+            let node;
+            const textNodes = [];
+            while(node = walker.nextNode()) {
+                if (node.parentNode.tagName !== 'B' && node.parentNode.tagName !== 'I' && node.parentNode.tagName !== 'SPAN') {
+                     textNodes.push(node);
+                }
+            }
+
+            textNodes.forEach(node => {
+                const parent = node.parentNode;
+                const words = node.nodeValue.split(/(\s+)/);
+                const fragment = document.createDocumentFragment();
+                words.forEach(word => {
+                    if (word.trim().length > 0) {
+                        const span = document.createElement('span');
+                        span.className = 'word-span';
+                        span.textContent = word;
+                        fragment.appendChild(span);
+                    } else {
+                        fragment.appendChild(document.createTextNode(word));
+                    }
+                });
+                parent.replaceChild(fragment, node);
+            });
+
             if (type !== 'dialogue') return tempDiv.innerHTML;
             
             const speakers = [];
