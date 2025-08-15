@@ -674,8 +674,9 @@
             isLessonActive = false;
             showScreen(allDOMElements.loadingScreen);
 
-            const lessonWords = [...newWords, ...repetitionWords.map(w => w.word)];
+            // `repetitionWords` is now consistently an array of objects.
             const repetitionWordsList = repetitionWords.map(w => w.word);
+            const lessonWords = [...newWords, ...repetitionWordsList];
             
             const prompt = `
             You are a veteran ESL teacher. Build a **single valid JSON object** for an A1 Arabic-speaking learner.
@@ -746,10 +747,11 @@
                         }
                     });
                     
-                    repetitionWords.forEach(repWord => {
-                        const wordIndex = wordsInProgress.findIndex(item => item.word === repWord.word);
+                    // `repetitionWords` is an array of objects. `repWordObj` is the object.
+                    repetitionWords.forEach(repWordObj => {
+                        const wordIndex = wordsInProgress.findIndex(item => item.word === repWordObj.word);
                         if (wordIndex > -1) {
-                           incrementReview(repWord.word);
+                           incrementReview(repWordObj.word);
                         }
                     });
                     
@@ -823,7 +825,7 @@
                 const wordCount = document.getElementById('word-count-lesson').value;
                 const customInstructions = document.getElementById('custom-prompt-lesson').value;
                 const newW = data.new_words.filter(w => !w.word.includes(' ')).map(w => w.word);
-                const repW = []; // Simplified for rewrite
+                const repW = []; // Simplified for rewrite, pass empty array of objects
                 generateLesson(newW, repW, true, isRevision, wordCount, customInstructions);
             });
             document.getElementById('next-lesson-btn').addEventListener('click', () => {
@@ -831,6 +833,7 @@
                 const customInstructions = document.getElementById('custom-prompt-lesson').value;
                 const { newWords, repetitionWords } = selectWordsForLesson();
                 if (newWords.length > 0 || repetitionWords.length > 0) {
+                    // repetitionWords is already an array of objects
                     generateLesson(newWords, repetitionWords, false, false, wordCount, customInstructions);
                 }
             });
@@ -1070,7 +1073,8 @@
             const { newWords, repetitionWords } = selectWordsForLesson();
 
             if (newWords.length > 0 || repetitionWords.length > 0) {
-                generateLesson(newWords, repetitionWords.map(r => r.word), false, false, wordCount, customInstructions);
+                // FIX: Pass the array of objects `repetitionWords` directly.
+                generateLesson(newWords, repetitionWords, false, false, wordCount, customInstructions);
             } else {
                 isLessonActive = false;
                 showScreen(allDOMElements.homeScreen);
@@ -1081,9 +1085,9 @@
             const wordCount = document.getElementById('word-count-review').value;
             const customInstructions = document.getElementById('custom-prompt-review').value;
             const pool = [...wordsInProgress].sort(() => 0.5 - Math.random()).slice(0, 20);
-            const wordsForRevision = pool.map(x => x.word);
-            if (wordsForRevision.length > 0) {
-                generateLesson([], wordsForRevision.map(w => ({ word: w })), false, true, wordCount, customInstructions);
+            if (pool.length > 0) {
+                // FIX: Pass the array of word objects `pool` directly.
+                generateLesson([], pool, false, true, wordCount, customInstructions);
             }
         }
 
@@ -1095,7 +1099,7 @@
             allDOMElements.historyList.innerHTML = lessonHistory.map((lesson, index) => `
                 <div class="p-3 border rounded-md hover:bg-slate-100 cursor-pointer" onclick="viewHistoryItem(${index})">
                     <p class="font-bold">درس بتاريخ: ${lesson.date}</p>
-                    <p class="text-sm text-slate-600 font-english" dir="ltr">${lesson.learnedWords.slice(0, 5).join(', ')}...</p>
+                    <p class="text-sm text-slate-600 font-english" dir="ltr">${(lesson.learnedWords || []).slice(0, 5).join(', ')}...</p>
                 </div>
             `).join('');
         }
