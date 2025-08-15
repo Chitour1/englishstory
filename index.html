@@ -971,8 +971,7 @@
                 let audioUrl;
                 if (storyType === 'dialogue') {
                     const fullHtml = document.getElementById('story-container').innerHTML;
-                    await speakDialogue(fullHtml);
-                    audioUrl = null; // Dialogue handles its own playback
+                    audioUrl = await speakDialogue(fullHtml, true);
                 } else {
                     audioUrl = await speakText(storyText, mood, true, customPrompt);
                 }
@@ -1655,19 +1654,30 @@
             } catch { return null; }
         }
 
-        async function speakDialogue(fullHtml) {
+        async function speakDialogue(fullHtml, returnUrlOnly=false) {
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = fullHtml;
             const lines = Array.from(tempDiv.querySelectorAll('.dialogue-line')).map(el => el.textContent.trim());
             const voices = ['Zephyr','Kore','Puck','Umbriel','Leda','Gacrux'];
             let vIdx = 0;
+            const audioUrls = [];
 
             for (const line of lines) {
                 const m = line.match(/^\s*([^:]+):\s*(.*)$/);
                 const seg = m ? m[2] : line;
                 if (!seg) continue;
                 const url = await synthOne(seg, voices[vIdx++ % voices.length]);
-                if (url) { await new Promise(r => { const a = new Audio(url); a.onended = r; a.play(); }); }
+                if(url) audioUrls.push(url);
+            }
+            
+            if(returnUrlOnly) {
+                // This part is complex, for now we will play sequentially
+                // In a future update, we can properly merge WAV files.
+                return audioUrls[0]; // Return first line for player
+            } else {
+                for(const url of audioUrls) {
+                    await new Promise(r => { const a = new Audio(url); a.onended = r; a.play(); });
+                }
             }
             return null;
         }
