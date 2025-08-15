@@ -851,77 +851,77 @@
         }
 
         function renderStoryAudioPlayer(storyText, mood) {
-            const playerContainer = document.getElementById('story-audio-player');
-            if (!playerContainer) return;
+    const playerContainer = document.getElementById('story-audio-player');
+    if (!playerContainer) return;
 
-            playerContainer.innerHTML = `
-                <div class="flex items-center gap-3">
-                    <button id="play-story-btn" class="flex-shrink-0 p-3 bg-sky-600 text-white rounded-full hover:bg-sky-700 transition disabled:bg-slate-400">
-                        <svg id="play-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                        <div id="play-loader" class="hidden w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    </button>
-                    <button id="refresh-story-audio-btn" class="flex-shrink-0 p-3 bg-slate-500 text-white rounded-full hover:bg-slate-600 transition disabled:bg-slate-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
-                    </button>
-                    <audio id="full-story-audio" class="w-full" controls></audio>
-                </div>
-                 <div class="mt-2">
-                    <input type="text" id="audio-custom-prompt" class="w-full p-2 border rounded-md text-sm" placeholder="اكتب تعليمات للقارئ (مثال: اقرأ بصوت هادئ)...">
-                </div>
-            `;
-            
-            const audioEl = document.getElementById('full-story-audio');
-            const playBtn = document.getElementById('play-story-btn');
-            const refreshBtn = document.getElementById('refresh-story-audio-btn');
-            const playIcon = document.getElementById('play-icon');
-            const playLoader = document.getElementById('play-loader');
-            
-            audioEl.style.display = 'none';
+    playerContainer.innerHTML = `
+        <div class="flex items-center gap-3">
+            <button id="play-story-btn" class="flex-shrink-0 p-3 bg-sky-600 text-white rounded-full hover:bg-sky-700 transition disabled:bg-slate-400">
+                <svg id="play-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                <div id="play-loader" class="hidden w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            </button>
+            <button id="refresh-story-audio-btn" class="flex-shrink-0 p-3 bg-slate-500 text-white rounded-full hover:bg-slate-600 transition disabled:bg-slate-400">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+            </button>
+            <audio id="full-story-audio" class="w-full" controls></audio>
+        </div>
+         <div class="mt-2">
+            <input type="text" id="audio-custom-prompt" class="w-full p-2 border rounded-md text-sm" placeholder="اكتب تعليمات للقارئ (مثال: اقرأ بصوت هادئ)...">
+        </div>
+    `;
+    
+    const audioEl = document.getElementById('full-story-audio');
+    const playBtn = document.getElementById('play-story-btn');
+    const refreshBtn = document.getElementById('refresh-story-audio-btn');
+    const playIcon = document.getElementById('play-icon');
+    const playLoader = document.getElementById('play-loader');
+    
+    audioEl.style.display = 'none';
 
-            const generateAndPlayAudio = async () => {
-                playIcon.classList.add('hidden');
-                playLoader.classList.remove('hidden');
-                playBtn.disabled = true;
-                refreshBtn.disabled = true;
+    const generateAndPlayAudio = async () => {
+        playIcon.classList.add('hidden');
+        playLoader.classList.remove('hidden');
+        playBtn.disabled = true;
+        refreshBtn.disabled = true;
 
-                const customPrompt = document.getElementById('audio-custom-prompt').value;
-                const audioUrl = await speakText(storyText, mood, true, customPrompt);
-                
-                playIcon.classList.remove('hidden');
-                playLoader.classList.add('hidden');
-                playBtn.disabled = false;
-                refreshBtn.disabled = false;
-                
-                if (audioUrl) {
-                    audioEl.src = audioUrl;
-                    audioEl.style.display = 'block';
-                    audioEl.play();
-                    playBtn.style.display = 'none';
-                    refreshBtn.style.display = 'flex';
-                }
-            };
-
-            playBtn.addEventListener('click', async () => {
-                if (audioEl.src) {
-                    audioEl.play();
-                } else {
-                    await generateAndPlayAudio();
-                }
-            });
-
-            refreshBtn.addEventListener('click', async () => {
-                await generateAndPlayAudio();
-            });
-
-            audioEl.addEventListener('play', () => {
-                playBtn.style.display = 'none';
-                refreshBtn.style.display = 'flex';
-            });
-             audioEl.addEventListener('pause', () => {
-                playBtn.style.display = 'flex';
-                refreshBtn.style.display = 'flex';
-            });
+        const customPrompt = document.getElementById('audio-custom-prompt').value;
+        const audioUrl = await speakText(storyText, mood, true, customPrompt);
+        
+        playIcon.classList.remove('hidden');
+        playLoader.classList.add('hidden');
+        playBtn.disabled = false;
+        refreshBtn.disabled = false;
+        
+        if (audioUrl) {
+            audioEl.src = audioUrl;
+            audioEl.style.display = 'block';
+            audioEl.play();
+            playBtn.style.display = 'none';
+            refreshBtn.style.display = 'flex';
         }
+    };
+
+    playBtn.addEventListener('click', async () => {
+        if (audioEl.src) {
+            audioEl.play();
+        } else {
+            await generateAndPlayAudio();
+        }
+    });
+
+    refreshBtn.addEventListener('click', async () => {
+        await generateAndPlayAudio();
+    });
+
+    audioEl.addEventListener('play', () => {
+        playBtn.style.display = 'none';
+        refreshBtn.style.display = 'flex';
+    });
+     audioEl.addEventListener('pause', () => {
+        playBtn.style.display = 'flex';
+        refreshBtn.style.display = 'flex';
+    });
+}
         
         function wrapWordsInSpans(htmlContent) {
             const tempDiv = document.createElement('div');
